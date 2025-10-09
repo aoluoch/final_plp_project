@@ -1,0 +1,55 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Every Monday at 2 AM
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Update dependencies
+        run: |
+          pnpm update --interactive --latest
+
+      - name: Run tests after update
+        run: |
+          pnpm tsc --noEmit
+          pnpm lint
+          pnpm build
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'chore: update dependencies'
+          body: |
+            This PR updates dependencies to their latest versions.
+            
+            Please review the changes and test thoroughly before merging.
+          branch: dependency-update
+          delete-branch: true

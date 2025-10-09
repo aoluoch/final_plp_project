@@ -10,7 +10,7 @@ interface SocketContextType {
   off: (event: string, callback?: (...args: any[]) => void) => void
 }
 
-const SocketContext = createContext<SocketContextType | undefined>(undefined)
+export const SocketContext = createContext<SocketContextType | undefined>(undefined)
 
 export const useSocket = () => {
   const context = useContext(SocketContext)

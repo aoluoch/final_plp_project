@@ -51,7 +51,7 @@ export const reportApi = {
       formData.append('notes', data.notes)
     }
     
-    data.images.forEach((image, index) => {
+    data.images.forEach((image) => {
       formData.append(`images`, image)
     })
 

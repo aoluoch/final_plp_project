@@ -2,6 +2,13 @@ export * from './user'
 export * from './report'
 export * from './pickup'
 
+export type Theme = 'light' | 'dark' | 'system'
+
+export interface Coordinates {
+  lat: number
+  lng: number
+}
+
 export interface ApiResponse<T> {
   data: T
   message: string

@@ -60,7 +60,7 @@ const MapView: React.FC<MapViewProps> = ({
       setMapMarkers([])
       
       // Add new markers
-      const newMarkers = markers.map((marker, index) => ({
+      const newMarkers = markers.map((marker) => ({
         id: marker.id,
         position: marker.position,
         title: marker.title,

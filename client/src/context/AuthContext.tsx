@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
-import { User, AuthUser, LoginCredentials, RegisterData } from '../types'
+import { AuthUser, LoginCredentials, RegisterData } from '../types'
 import { authApi } from '../api/authApi'
 
 interface AuthState {
@@ -69,7 +69,7 @@ interface AuthContextType extends AuthState {
   refreshToken: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)

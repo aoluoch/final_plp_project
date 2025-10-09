@@ -109,7 +109,7 @@ export const mapHelpers = {
   },
 
   // Convert address to coordinates (placeholder - would use geocoding service)
-  geocode: async (address: string): Promise<Coordinates | null> => {
+  geocode: async (_address: string): Promise<Coordinates | null> => {
     // This would typically use a geocoding service
     return null
   },
