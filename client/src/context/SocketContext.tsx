@@ -57,7 +57,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setIsConnected(false)
       })
 
-      setSocket(newSocket)
+      // Use setTimeout to avoid calling setState synchronously in effect
+      setTimeout(() => {
+        setSocket(newSocket)
+      }, 0)
 
       return () => {
         newSocket.close()

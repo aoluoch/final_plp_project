@@ -71,7 +71,10 @@ export function useMap(options: UseMapOptions = {}): UseMapReturn {
   // Auto-center on selected location
   useEffect(() => {
     if (selectedLocation) {
-      setCenter(selectedLocation)
+      // Use setTimeout to avoid calling setState synchronously in effect
+      setTimeout(() => {
+        setCenter(selectedLocation)
+      }, 0)
     }
   }, [selectedLocation])
 
