@@ -124,7 +124,9 @@ export const validators = {
   },
 }
 
-export const validateForm = (data: Record<string, unknown>, rules: Record<string, unknown[]>) => {
+type ValidatorFunction = (value: unknown, data?: Record<string, unknown>) => string | null
+
+export const validateForm = (data: Record<string, unknown>, rules: Record<string, ValidatorFunction[]>) => {
   const errors: Record<string, string> = {}
 
   Object.keys(rules).forEach((field) => {
