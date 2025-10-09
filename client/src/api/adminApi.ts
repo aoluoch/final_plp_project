@@ -62,7 +62,7 @@ export const adminApi = {
     return response.data.data
   },
 
-  async exportReports(format: 'csv' | 'excel', filters?: any): Promise<Blob> {
+  async exportReports(format: 'csv' | 'excel', filters?: Record<string, unknown>): Promise<Blob> {
     const params = new URLSearchParams()
     params.append('format', format)
     
@@ -87,7 +87,7 @@ export const adminApi = {
     return response.data
   },
 
-  async getSystemLogs(page = 1, limit = 50, level?: string): Promise<any> {
+  async getSystemLogs(page = 1, limit = 50, level?: string): Promise<{ logs: unknown[]; total: number; page: number; limit: number }> {
     const params = new URLSearchParams()
     params.append('page', page.toString())
     params.append('limit', limit.toString())
@@ -100,11 +100,11 @@ export const adminApi = {
     return response.data
   },
 
-  async updateSystemSettings(settings: Record<string, any>): Promise<void> {
+  async updateSystemSettings(settings: Record<string, unknown>): Promise<void> {
     await axiosInstance.put('/admin/settings', settings)
   },
 
-  async getSystemSettings(): Promise<Record<string, any>> {
+  async getSystemSettings(): Promise<Record<string, unknown>> {
     const response = await axiosInstance.get('/admin/settings')
     return response.data.data
   },

@@ -12,22 +12,26 @@ afterEach(() => {
 
 // Mock IntersectionObserver
 globalThis.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor() {
+    // Mock constructor
+  }
+  disconnect = vi.fn()
+  observe = vi.fn()
+  unobserve = vi.fn()
   root = null
   rootMargin = ''
   thresholds = []
-  takeRecords() { return [] }
+  takeRecords = vi.fn(() => [])
 }
 
 // Mock ResizeObserver
 globalThis.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  constructor() {
+    // Mock constructor
+  }
+  disconnect = vi.fn()
+  observe = vi.fn()
+  unobserve = vi.fn()
 }
 
 // Mock matchMedia
@@ -37,11 +41,11 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   }),
 })
 

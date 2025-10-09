@@ -3,7 +3,7 @@ import { ApiError } from '../types'
 
 interface UseFetchOptions {
   immediate?: boolean
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: unknown) => void
   onError?: (error: ApiError) => void
 }
 

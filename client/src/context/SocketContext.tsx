@@ -5,13 +5,14 @@ import { useAuth } from './AuthContext'
 interface SocketContextType {
   socket: Socket | null
   isConnected: boolean
-  emit: (event: string, data?: any) => void
-  on: (event: string, callback: (...args: any[]) => void) => void
-  off: (event: string, callback?: (...args: any[]) => void) => void
+  emit: (event: string, data?: unknown) => void
+  on: (event: string, callback: (...args: unknown[]) => void) => void
+  off: (event: string, callback?: (...args: unknown[]) => void) => void
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SocketContext = createContext<SocketContextType | undefined>(undefined)
-
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSocket = () => {
   const context = useContext(SocketContext)
   if (context === undefined) {
@@ -66,19 +67,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
   }, [isAuthenticated, user])
 
-  const emit = (event: string, data?: any) => {
+  const emit = (event: string, data?: unknown) => {
     if (socket && isConnected) {
       socket.emit(event, data)
     }
   }
 
-  const on = (event: string, callback: (...args: any[]) => void) => {
+  const on = (event: string, callback: (...args: unknown[]) => void) => {
     if (socket) {
       socket.on(event, callback)
     }
   }
 
-  const off = (event: string, callback?: (...args: any[]) => void) => {
+  const off = (event: string, callback?: (...args: unknown[]) => void) => {
     if (socket) {
       socket.off(event, callback)
     }

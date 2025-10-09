@@ -3,7 +3,7 @@ export const phoneRegex = /^\+?[\d\s\-()]+$/
 export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/
 
 export const validators = {
-  required: (value: any) => {
+  required: (value: unknown) => {
     if (value === null || value === undefined || value === '') {
       return 'This field is required'
     }
@@ -124,7 +124,7 @@ export const validators = {
   },
 }
 
-export const validateForm = (data: Record<string, any>, rules: Record<string, any[]>) => {
+export const validateForm = (data: Record<string, unknown>, rules: Record<string, unknown[]>) => {
   const errors: Record<string, string> = {}
 
   Object.keys(rules).forEach((field) => {

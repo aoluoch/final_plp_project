@@ -11,7 +11,7 @@ interface MapViewProps {
     description?: string
     color?: string
   }>
-  onMarkerClick?: (marker: any) => void
+  onMarkerClick?: (marker: { id: string; position: { lat: number; lng: number }; title?: string; description?: string; color?: string }) => void
   onMapClick?: (position: { lat: number; lng: number }) => void
   className?: string
   height?: string
@@ -29,8 +29,8 @@ const MapView: React.FC<MapViewProps> = ({
   interactive = true,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null)
-  const [map, setMap] = useState<any>(null)
-  const [mapMarkers, setMapMarkers] = useState<any[]>([])
+  const [map, setMap] = useState<{ center: { lat: number; lng: number }; zoom: number } | null>(null)
+  const [mapMarkers, setMapMarkers] = useState<Array<{ id: string; position: { lat: number; lng: number }; title?: string; description?: string; color: string }>>([])
 
   useEffect(() => {
     // Initialize map (placeholder for actual map implementation)
@@ -51,7 +51,7 @@ const MapView: React.FC<MapViewProps> = ({
       `
       setMap({ center, zoom })
     }
-  }, [center, zoom, markers.length])
+  }, [center, zoom, markers.length, map])
 
   useEffect(() => {
     // Update markers when markers prop changes
@@ -70,7 +70,8 @@ const MapView: React.FC<MapViewProps> = ({
       
       setMapMarkers(newMarkers)
     }
-  }, [markers, map])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markers])
 
   const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (onMapClick && interactive) {
