@@ -19,6 +19,8 @@ client/*.lcov
 .env.*
 client/.env
 client/.env.*
+server/.env
+server/.env.*
 
 # Logs
 *.log
