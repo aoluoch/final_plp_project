@@ -102,6 +102,17 @@ const Register: React.FC = () => {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-8">
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </Link>
+        </div>
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
           Create Account
         </h2>

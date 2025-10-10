@@ -44,6 +44,9 @@ const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
       
+      {/* Direct login route for convenience */}
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+
       {/* Auth Routes */}
       <Route path="/auth" element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
