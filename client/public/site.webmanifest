@@ -1,0 +1,26 @@
+{
+  "name": "WasteWise - Smart Waste Management",
+  "short_name": "WasteWise",
+  "description": "Smart waste management for a cleaner tomorrow. Report waste, schedule pickups, and contribute to a sustainable community.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/favicon-16x16.svg",
+      "sizes": "16x16",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon-32x32.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ]
+}

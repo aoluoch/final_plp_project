@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="binGradient180" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lidGradient180" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle for iOS -->
+  <circle cx="90" cy="90" r="85" fill="#3B82F6" opacity="0.1"/>
+  
+  <!-- Waste bin body -->
+  <rect x="45" y="67" width="90" height="90" rx="11" fill="url(#binGradient180)" stroke="#1E40AF" stroke-width="2"/>
+  
+  <!-- Bin lid -->
+  <rect x="34" y="56" width="112" height="17" rx="8.5" fill="url(#lidGradient180)" stroke="#1E40AF" stroke-width="2"/>
+  
+  <!-- Lid handle -->
+  <rect x="79" y="45" width="22" height="11" rx="5.5" fill="#1E40AF"/>
+  
+  <!-- Recycling arrows -->
+  <path d="M67 90 L90 78 L113 90 L101 102 L90 113 L79 102 Z" fill="#60A5FA" opacity="0.8"/>
+  <path d="M67 113 L90 101 L113 113 L101 125 L90 135 L79 125 Z" fill="#60A5FA" opacity="0.6"/>
+  
+  <!-- Bin feet -->
+  <rect x="51" y="157" width="11" height="6" rx="3" fill="#1E40AF"/>
+  <rect x="118" y="157" width="11" height="6" rx="3" fill="#1E40AF"/>
+</svg>
