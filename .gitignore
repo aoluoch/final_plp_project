@@ -1,0 +1,37 @@
+# Root ignore rules
+
+# Node / frontend artifacts
+client/node_modules/
+client/dist/
+client/build/
+client/.next/
+client/.nuxt/
+client/.cache/
+client/.parcel-cache/
+client/.storybook-out/
+client/.out/
+client/coverage/
+client/.nyc_output/
+client/*.lcov
+
+# Env files
+.env
+.env.*
+client/.env
+client/.env.*
+
+# Logs
+*.log
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/pnpm-debug.log*
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git backup artifacts
+client/.git_backup_*/
