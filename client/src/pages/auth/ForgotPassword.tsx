@@ -33,9 +33,12 @@ const ForgotPassword: React.FC = () => {
       setIsLoading(true)
       await authApi.forgotPassword(email)
       setIsSubmitted(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Forgot password error:', error)
-      setError(error.response?.data?.message || 'Failed to send reset email. Please try again.')
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : undefined
+      setError(errorMessage || 'Failed to send reset email. Please try again.')
     } finally {
       setIsLoading(false)
     }

@@ -57,10 +57,13 @@ const ResetPassword: React.FC = () => {
       setIsLoading(true)
       await authApi.resetPassword({ token, password: formData.password })
       setIsSuccess(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Reset password error:', error)
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : undefined
       setErrors({ 
-        general: error.response?.data?.message || 'Failed to reset password. Please try again.' 
+        general: errorMessage || 'Failed to reset password. Please try again.' 
       })
     } finally {
       setIsLoading(false)
