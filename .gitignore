@@ -35,3 +35,42 @@ Thumbs.db
 
 # Git backup artifacts
 client/.git_backup_*/
+
+# Client-specific ignores (merged from client/.gitignore)
+client/.pnpm-store/
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
+client/.vscode/
+client/.idea/
+client/*.swp
+client/*.swo
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/pnpm-debug.log*
+client/lerna-debug.log*
+client/pids
+client/*.pid
+client/*.seed
+client/*.pid.lock
+client/coverage/
+client/*.lcov
+client/.nyc_output
+client/jspm_packages/
+client/.npm
+client/.eslintcache
+client/.rpt2_cache/
+client/.rts2_cache_cjs/
+client/.rts2_cache_es/
+client/.rts2_cache_umd/
+client/.node_repl_history
+client/*.tgz
+client/.yarn-integrity
+client/.cache
+client/.parcel-cache
+client/.out
+client/.storybook-out
+client/tmp/
+client/temp/
