@@ -3,13 +3,15 @@ import { AuthUser, LoginCredentials, RegisterData, User, ApiResponse } from '../
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthUser> {
-    const response = await axiosInstance.post<ApiResponse<AuthUser>>('/auth/login', credentials)
-    return response.data.data
+    const response = await axiosInstance.post<ApiResponse<{user: AuthUser, token: string, refreshToken: string}>>('/auth/login', credentials)
+    const { user, token, refreshToken } = response.data.data
+    return { ...user, token, refreshToken }
   },
 
   async register(data: RegisterData): Promise<AuthUser> {
-    const response = await axiosInstance.post<ApiResponse<AuthUser>>('/auth/register', data)
-    return response.data.data
+    const response = await axiosInstance.post<ApiResponse<{user: AuthUser, token: string, refreshToken: string}>>('/auth/register', data)
+    const { user, token, refreshToken } = response.data.data
+    return { ...user, token, refreshToken }
   },
 
   async logout(): Promise<void> {
@@ -24,17 +26,27 @@ export const authApi = {
   },
 
   async verifyToken(): Promise<AuthUser> {
-    const response = await axiosInstance.get<ApiResponse<AuthUser>>('/auth/verify')
-    return response.data.data
+    const response = await axiosInstance.get<ApiResponse<{user: AuthUser}>>('/auth/me')
+    const user = response.data.data.user
+    // Normalize user data to ensure id field exists
+    return {
+      ...user,
+      id: user.id || user._id || ''
+    }
   },
 
   async getProfile(): Promise<User> {
-    const response = await axiosInstance.get<ApiResponse<User>>('/auth/profile')
-    return response.data.data
+    const response = await axiosInstance.get<ApiResponse<{user: User}>>('/auth/me')
+    const user = response.data.data.user
+    // Normalize user data to ensure id field exists
+    return {
+      ...user,
+      id: user.id || user._id || ''
+    }
   },
 
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await axiosInstance.put<ApiResponse<User>>('/auth/profile', data)
+    const response = await axiosInstance.put<ApiResponse<User>>('/auth/me', data)
     return response.data.data
   },
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import React, { createContext, useReducer, useEffect } from 'react'
 import { AuthUser, LoginCredentials, RegisterData } from '../types'
 import { authApi } from '../api/authApi'
 
@@ -28,14 +28,22 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'LOGIN_START':
       return { ...state, isLoading: true, error: null }
-    case 'LOGIN_SUCCESS':
+    case 'LOGIN_SUCCESS': {
+      // The payload is already the user object from authApi.login()
+      // Normalize user data to ensure id field exists
+      const normalizedUser = {
+        ...action.payload,
+        id: action.payload.id || action.payload._id || ''
+      }
+      
       return {
         ...state,
-        user: action.payload,
+        user: normalizedUser,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       }
+    }
     case 'LOGIN_FAILURE':
       return {
         ...state,
@@ -71,14 +79,6 @@ interface AuthContextType extends AuthState {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -107,6 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'LOGIN_START' })
       const user = await authApi.login(credentials)
+      console.log('Login response:', user)
       localStorage.setItem('token', user.token)
       localStorage.setItem('refreshToken', user.refreshToken)
       dispatch({ type: 'LOGIN_SUCCESS', payload: user })

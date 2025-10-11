@@ -1,6 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 // Layouts
 import AuthLayout from '../layouts/AuthLayout'
@@ -108,7 +108,7 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/dashboard" 
         element={
-          isAuthenticated && user ? (
+          isAuthenticated && user && user.role ? (
             <Navigate to={`/${user.role}/dashboard`} replace />
           ) : (
             <Navigate to="/login" replace />

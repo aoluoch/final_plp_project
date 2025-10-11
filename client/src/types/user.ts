@@ -1,5 +1,6 @@
 export interface User {
   id: string
+  _id?: string // For MongoDB compatibility
   email: string
   firstName: string
   lastName: string
@@ -14,11 +15,11 @@ export interface User {
 export type UserRole = 'admin' | 'collector' | 'resident'
 
 export interface Address {
-  street: string
-  city: string
-  state: string
-  zipCode: string
-  coordinates: {
+  street?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  coordinates?: {
     lat: number
     lng: number
   }

@@ -97,7 +97,8 @@ router.post('/register', [
       message: 'User registered successfully',
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
+          id: user._id, // Also include id for frontend compatibility
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -178,7 +179,8 @@ router.post('/login', [
       message: 'Login successful',
       data: {
         user: {
-          id: user._id,
+          _id: user._id,
+          id: user._id, // Also include id for frontend compatibility
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -207,10 +209,33 @@ router.post('/login', [
 // @access  Private
 router.get('/me', authMiddleware, async (req, res) => {
   try {
+    // Set cache control headers to prevent caching of auth responses
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    
+    // Normalize user data to include both _id and id fields
+    const normalizedUser = {
+      _id: req.user._id,
+      id: req.user._id, // Also include id for frontend compatibility
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      role: req.user.role,
+      phone: req.user.phone,
+      address: req.user.address,
+      isActive: req.user.isActive,
+      lastLogin: req.user.lastLogin,
+      createdAt: req.user.createdAt,
+      updatedAt: req.user.updatedAt
+    };
+    
     res.json({
       success: true,
       data: {
-        user: req.user
+        user: normalizedUser
       }
     });
   } catch (error) {

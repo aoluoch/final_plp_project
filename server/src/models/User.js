@@ -4,32 +4,32 @@ const bcrypt = require('bcryptjs');
 const addressSchema = new mongoose.Schema({
   street: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   city: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   state: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   zipCode: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   coordinates: {
     lat: {
       type: Number,
-      required: true
+      required: false
     },
     lng: {
       type: Number,
-     required: true
+      required: false
     }
   }
 });

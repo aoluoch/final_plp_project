@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../context/ThemeContext'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'

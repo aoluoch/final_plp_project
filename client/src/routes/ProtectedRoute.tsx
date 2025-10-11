@@ -1,6 +1,6 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { UserRole } from '../types'
 
 interface ProtectedRouteProps {
@@ -35,6 +35,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       admin: '/admin/dashboard',
       collector: '/collector/dashboard',
       resident: '/resident/dashboard',
+    }
+    
+    // Debug logging
+    console.log('ProtectedRoute: user.role =', user.role, 'requiredRole =', requiredRole)
+    
+    if (!user.role) {
+      console.error('User role is undefined!', user)
+      return <Navigate to="/login" replace />
+    }
+    
+    // Additional safety check for valid role
+    if (!roleDashboard[user.role]) {
+      console.error('Invalid user role:', user.role, 'User:', user)
+      return <Navigate to="/login" replace />
     }
     
     return <Navigate to={roleDashboard[user.role]} replace />
