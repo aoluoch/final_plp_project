@@ -20,25 +20,42 @@ const ResidentLayout: React.FC = () => {
   ]
 
   return (
-    <div className={`min-h-screen ${actualTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <Navbar 
-        user={user}
-        onLogout={logout}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        theme={theme}
-        onThemeChange={setTheme}
-      />
+    <div className={`min-h-screen ${actualTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} scroll-smooth`}>
+      {/* Sticky Navbar */}
+      <div className="sticky top-0 z-30">
+        <Navbar 
+          user={user}
+          onLogout={logout}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          theme={theme}
+          onThemeChange={setTheme}
+        />
+      </div>
       
       <div className="flex">
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          navItems={residentNavItems}
-          currentPath={location.pathname}
-        />
+        {/* Sticky Sidebar */}
+        <div className="hidden lg:block lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:z-20">
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            navItems={residentNavItems}
+            currentPath={location.pathname}
+          />
+        </div>
         
-        <main className="flex-1 lg:ml-64">
-          <div className="p-6">
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden">
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            navItems={residentNavItems}
+            currentPath={location.pathname}
+          />
+        </div>
+        
+        {/* Main Content */}
+        <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>
