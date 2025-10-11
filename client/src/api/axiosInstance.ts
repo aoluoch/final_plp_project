@@ -1,11 +1,11 @@
 import axios from 'axios'
 import { ApiError } from '../types'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
+const baseURL = '/api'
 
 export const axiosInstance = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 15000, // Increased timeout to 15 seconds
   headers: {
     'Content-Type': 'application/json',
   },
