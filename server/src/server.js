@@ -94,9 +94,7 @@ app.use('*', (req, res) => {
 // Database connection
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.NODE_ENV === 'test' 
-      ? process.env.MONGODB_TEST_URI 
-      : process.env.MONGODB_URI;
+    const mongoURI = process.env.MONGODB_URI;
     
     await mongoose.connect(mongoURI);
     console.log('MongoDB connected successfully');

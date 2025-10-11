@@ -6,7 +6,7 @@ const User = require('./src/models/User');
 describe('Wastewise API Tests', () => {
   beforeAll(async () => {
     // Connect to test database
-    await mongoose.connect(process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/wastewise_test');
+    await mongoose.connect('mongodb://localhost:27017/wastewise_test');
   });
 
   afterAll(async () => {
