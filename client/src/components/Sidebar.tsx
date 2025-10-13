@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, navItems, currentPat
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 font-['Poppins']">
               <p className="font-medium">WasteWise v1.0.0</p>
-              <p className="mt-1">© 2024 All rights reserved</p>
+              <p className="mt-1">© {new Date().getFullYear()} All rights reserved</p>
             </div>
           </div>
         </div>

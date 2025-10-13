@@ -39,7 +39,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       return
     }
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
+    const socketUrl = import.meta.env.VITE_SOCKET_URL
 
     console.log('Creating socket connection to:', socketUrl)
     console.log('User token:', user.token ? 'Present' : 'Missing')
