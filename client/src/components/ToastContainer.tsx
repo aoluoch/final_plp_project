@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useToast } from '../context/ToastContext'
 
 const typeStyles: Record<string, string> = {
@@ -25,6 +25,11 @@ const ToastContainer: React.FC = () => {
   const { toasts, dismissToast } = useToast()
   const [leaving, setLeaving] = useState<Record<string, boolean>>({})
 
+  const handleDismiss = useCallback((id: string) => {
+    setLeaving((prev) => ({ ...prev, [id]: true }))
+    window.setTimeout(() => dismissToast(id), 180) // allow exit animation
+  }, [dismissToast])
+
   useEffect(() => {
     const timers: number[] = []
     toasts.forEach((t) => {
@@ -36,12 +41,7 @@ const ToastContainer: React.FC = () => {
     return () => {
       timers.forEach((t) => window.clearTimeout(t))
     }
-  }, [toasts])
-
-  const handleDismiss = (id: string) => {
-    setLeaving((prev) => ({ ...prev, [id]: true }))
-    window.setTimeout(() => dismissToast(id), 180) // allow exit animation
-  }
+  }, [toasts, leaving, handleDismiss])
 
   return (
     <div className="fixed top-4 right-4 z-[9999] w-[92vw] max-w-sm">
