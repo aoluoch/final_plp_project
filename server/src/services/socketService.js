@@ -39,10 +39,22 @@ const setupSocketHandlers = (io) => {
     socket.join(`role:${socket.user.role}`);
 
     // Join area-based room if user has address
-    if (socket.user.address?.coordinates) {
-      const areaRoom = `area:${socket.user.address.coordinates.lat.toFixed(2)},${socket.user.address.coordinates.lng.toFixed(2)}`;
+    if (
+      socket.user.address &&
+      socket.user.address.coordinates &&
+      typeof socket.user.address.coordinates.lat === "number" &&
+      typeof socket.user.address.coordinates.lng === "number"
+    ) {
+      const lat = socket.user.address.coordinates.lat;
+      const lng = socket.user.address.coordinates.lng;
+      const areaRoom = `area:${lat.toFixed(2)},${lng.toFixed(2)}`;
       socket.join(areaRoom);
+    } else {
+      console.warn(
+        `User ${socket.user.firstName} ${socket.user.lastName} has no valid coordinates, skipping area room join.`
+      );
     }
+    
 
     // Handle joining specific rooms
     socket.on('join_room', (roomName) => {
