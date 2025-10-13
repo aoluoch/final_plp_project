@@ -1,6 +1,7 @@
 import React, { createContext, useReducer, useEffect } from 'react'
 import { AuthUser, LoginCredentials, RegisterData } from '../types'
 import { authApi } from '../api/authApi'
+import { useToast } from './ToastContext'
 
 interface AuthState {
   user: AuthUser | null
@@ -86,6 +87,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
+  const { showToast } = useToast()
 
   useEffect(() => {
     // Check for stored token on mount
@@ -119,9 +121,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', user.token)
       localStorage.setItem('refreshToken', user.refreshToken)
       dispatch({ type: 'LOGIN_SUCCESS', payload: user })
+      showToast({ type: 'success', title: 'Welcome back', message: `Signed in as ${user.email}` })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed'
+      const apiErr = error as { message?: string }
+      const message = apiErr && apiErr.message ? apiErr.message : 'Login failed'
       dispatch({ type: 'LOGIN_FAILURE', payload: message })
+      showToast({ type: 'error', title: 'Login failed', message })
       throw error
     }
   }
@@ -133,9 +138,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('token', user.token)
       localStorage.setItem('refreshToken', user.refreshToken)
       dispatch({ type: 'LOGIN_SUCCESS', payload: user })
+      showToast({ type: 'success', title: 'Account created', message: `Welcome, ${user.firstName}!` })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Registration failed'
+      const apiErr = error as { message?: string; errors?: Record<string, string[]> }
+      let message = apiErr && apiErr.message ? apiErr.message : 'Registration failed'
+      if (apiErr && apiErr.errors) {
+        const firstKey = Object.keys(apiErr.errors)[0]
+        const firstMsg = firstKey ? apiErr.errors[firstKey]?.[0] : undefined
+        if (firstMsg) message = `${message}: ${firstMsg}`
+      }
       dispatch({ type: 'LOGIN_FAILURE', payload: message })
+      showToast({ type: 'error', title: 'Registration failed', message })
       throw error
     }
   }
@@ -144,6 +157,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
     dispatch({ type: 'LOGOUT' })
+    showToast({ type: 'info', title: 'Signed out', message: 'You have been logged out.' })
   }
 
   const clearError = () => {

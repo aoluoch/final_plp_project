@@ -75,17 +75,28 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true)
       
+      const firstName = formData.firstName.trim()
+      const lastName = formData.lastName.trim()
+      const email = formData.email.trim().toLowerCase()
+      const phone = formData.phone.trim()
+      const street = formData.street.trim()
+      const city = formData.city.trim()
+      const state = formData.state.trim()
+      const zipCode = formData.zipCode.trim()
+
+      const hasAddress = Boolean(street || city || state || zipCode)
+
       const registrationData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
+        firstName,
+        lastName,
+        email,
         password: formData.password,
-        phone: formData.phone || undefined,
-        address: (formData.street || formData.city || formData.state || formData.zipCode) ? {
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
+        phone: phone || undefined,
+        address: hasAddress ? {
+          ...(street ? { street } : {}),
+          ...(city ? { city } : {}),
+          ...(state ? { state } : {}),
+          ...(zipCode ? { zipCode } : {}),
         } : undefined,
       }
 
@@ -93,7 +104,45 @@ const Register: React.FC = () => {
       navigate('/resident/dashboard')
     } catch (error) {
       console.error('Registration error:', error)
-      // Error is handled by the auth context
+      const anyErr = error as any
+      // Map server-side validation errors to form fields
+      if (anyErr && anyErr.errors && typeof anyErr.errors === 'object') {
+        const serverErrors = anyErr.errors as Record<string, string[]>
+        const mapped: Record<string, string> = {}
+        Object.keys(serverErrors).forEach((key) => {
+          const msg = serverErrors[key]?.[0]
+          switch (key) {
+            case 'firstName':
+              mapped.firstName = msg
+              break
+            case 'lastName':
+              mapped.lastName = msg
+              break
+            case 'email':
+              mapped.email = msg
+              break
+            case 'password':
+              mapped.password = msg
+              break
+            case 'address.street':
+              mapped.street = msg
+              break
+            case 'address.city':
+              mapped.city = msg
+              break
+            case 'address.state':
+              mapped.state = msg
+              break
+            case 'address.zipCode':
+              mapped.zipCode = msg
+              break
+            default:
+              break
+          }
+        })
+        if (Object.keys(mapped).length > 0) setErrors(mapped)
+      }
+      // Toast is handled in AuthContext
     } finally {
       setIsLoading(false)
     }
@@ -241,7 +290,7 @@ const Register: React.FC = () => {
             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
               errors.phone ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="Enter your phone number"
+            placeholder="Start with country code ie. +254"
           />
           {errors.phone && (
             <p className="mt-1 text-sm text-red-600">{errors.phone}</p>

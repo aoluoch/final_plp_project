@@ -113,10 +113,32 @@ router.post('/register', [
       }
     });
   } catch (error) {
+    // Handle duplicate email error from Mongo (race condition or index enforcement)
+    if (error && error.code === 11000 && (error.keyPattern?.email || error.keyValue?.email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // Handle Mongoose validation errors explicitly
+    if (error && error.name === 'ValidationError') {
+      const formattedErrors = {}
+      Object.keys(error.errors || {}).forEach((key) => {
+        const msg = error.errors[key]?.message || 'Invalid value'
+        formattedErrors[key] = [msg]
+      })
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: formattedErrors
+      })
+    }
+
     res.status(500).json({
       success: false,
       message: 'Server error during registration',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? (error.message || String(error)) : undefined
     });
   }
 });
