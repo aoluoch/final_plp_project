@@ -34,7 +34,7 @@ const ResidentLayout: React.FC = () => {
       
       <div className="flex">
         {/* Sticky Sidebar */}
-        <div className="hidden lg:block lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:z-20">
+        <div className="hidden lg:block lg:sticky lg:top-16 lg:h-[100vh] lg:z-20">
           <Sidebar
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
@@ -55,7 +55,7 @@ const ResidentLayout: React.FC = () => {
         
         {/* Main Content */}
         <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)] overflow-y-auto">
-          <div className="p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto">
+          <div className="px-6 py-6 max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>

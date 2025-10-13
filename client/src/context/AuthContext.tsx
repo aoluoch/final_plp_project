@@ -91,15 +91,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for stored token on mount
     const token = localStorage.getItem('token')
     if (token) {
+      // Set loading state during token verification
+      dispatch({ type: 'SET_LOADING', payload: true })
+      
       // Verify token and get user data
       authApi.verifyToken()
         .then((user) => {
           dispatch({ type: 'LOGIN_SUCCESS', payload: user })
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Token verification failed:', error)
           localStorage.removeItem('token')
           localStorage.removeItem('refreshToken')
+          dispatch({ type: 'SET_LOADING', payload: false })
         })
+    } else {
+      // No token found, ensure loading is false
+      dispatch({ type: 'SET_LOADING', payload: false })
     }
   }, [])
 

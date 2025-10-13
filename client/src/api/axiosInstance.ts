@@ -50,10 +50,10 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest)
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Refresh failed, clear tokens but don't redirect immediately
+        // Let the AuthContext handle the redirect logic
         localStorage.removeItem('token')
         localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
         return Promise.reject(refreshError)
       }
     }

@@ -7,7 +7,7 @@ const ResidentDashboard: React.FC = () => {
   const { user } = useAuth()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-['Poppins']">
       {/* Welcome Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -19,7 +19,7 @@ const ResidentDashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 lg:gap-6">
         <Link to="/resident/report">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 lg:p-6 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer">
             <div className="flex items-center">
@@ -81,27 +81,10 @@ const ResidentDashboard: React.FC = () => {
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white truncate">
-                My Reports
+                My Statistics
               </h3>
               <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-300 truncate">
-                View all your reports
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional action card for very large screens */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 lg:p-6 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer">
-          <div className="flex items-center">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mr-3 lg:mr-4">
-              <span className="text-xl lg:text-2xl">🏠</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white truncate">
-                Profile
-              </h3>
-              <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-300 truncate">
-                Manage your profile
+                View your statistics
               </p>
             </div>
           </div>
@@ -109,7 +92,7 @@ const ResidentDashboard: React.FC = () => {
       </div>
 
       {/* Dashboard Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* Recent Reports */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -151,7 +134,7 @@ const ResidentDashboard: React.FC = () => {
         </div>
 
         {/* Quick Tips Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow xl:col-span-2 2xl:col-span-1">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow lg:col-span-2 xl:col-span-1">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Quick Tips

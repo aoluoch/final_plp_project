@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">W</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl font-bold text-gray-900 dark:text-white font-['Poppins']">
                 WasteWise
               </span>
             </Link>
@@ -78,10 +78,10 @@ const Navbar: React.FC<NavbarProps> = ({
             {user ? (
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white font-['Poppins']">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize font-['Poppins']">
                     {user.role}
                   </p>
                 </div>
