@@ -1,6 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body } = require('express-validator');
+const crypto = require('crypto');
+const { sendCustomEmail } = require('../services/emailService');
 const User = require('../models/User');
 const { generateToken, generateRefreshToken, authMiddleware } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validate');
@@ -345,6 +347,99 @@ router.post('/logout', [
       message: 'Server error during logout',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+});
+
+// @route   POST /api/auth/forgot-password
+// @desc    Request password reset email
+// @access  Public
+router.post('/forgot-password', [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  validate
+], async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Do not reveal whether the email exists
+      return res.json({ success: true, message: 'If this email exists, a reset link has been sent.' });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.resetPasswordToken = tokenHash;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/auth/reset-password?token=${rawToken}`;
+
+    const subject = 'Password Reset Request';
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color:#2E7D32;">Password Reset Request</h2>
+        <p>Hello ${user.firstName || 'there'},</p>
+        <p>You requested to reset your Wastewise password.</p>
+        <div style="background-color:#f5f5f5; padding:15px; border-radius:5px; margin:20px 0; text-align:center;">
+          <a href="${resetUrl}" style="background:#2E7D32; color:#fff; padding:10px 20px; text-decoration:none; border-radius:5px; display:inline-block;">
+            Reset Password
+          </a>
+        </div>
+        <p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
+      </div>
+    `;
+
+    await sendCustomEmail(user.email, subject, html);
+
+    res.json({ success: true, message: 'If this email exists, a reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error sending reset email' });
+  }
+});
+
+// @route   POST /api/auth/reset-password
+// @desc    Reset password using token
+// @access  Public
+router.post('/reset-password', [
+  body('token')
+    .notEmpty()
+    .withMessage('Token is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
+  validate
+], async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: new Date() }
+    }).select('+password');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    // Invalidate refresh tokens upon password change for safety
+    user.refreshTokens = [];
+    await user.save();
+
+    res.json({ success: true, message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error resetting password' });
   }
 });
 
