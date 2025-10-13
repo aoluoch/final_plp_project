@@ -41,11 +41,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, navItems, currentPat
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:shadow-none lg:border-r lg:border-gray-200 lg:dark:border-gray-700',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:top-16 lg:bottom-0 lg:left-0 lg:shadow-lg border-r border-gray-200 dark:border-gray-700',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex flex-col h-screen sticky top-0 flex-shrink-0">
+        <div className="flex flex-col h-full flex-shrink-0">
           {/* Navigation items */}
           <nav className="flex-1 px-6 py-6 space-y-3 overflow-y-auto">
             {navItems.map((item) => {
