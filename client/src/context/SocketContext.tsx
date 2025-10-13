@@ -32,84 +32,66 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   
-  // Safely get auth context with error handling
-  let authContext
-  try {
-    authContext = useAuth()
-  } catch (error) {
-    console.warn('SocketProvider: AuthContext not available, skipping socket initialization')
-    return <>{children}</>
-  }
-  
-  const { user, isAuthenticated } = authContext
+  const { user, isAuthenticated } = useAuth()
 
   useEffect(() => {
-    if (isAuthenticated && user && user.token) {
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
-      
-      console.log('Creating socket connection to:', socketUrl)
-      console.log('User token:', user.token ? 'Present' : 'Missing')
-      console.log('User ID:', user.id)
-      
+    if (!isAuthenticated || !user || !user.token) {
+      return
+    }
+
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
+
+    console.log('Creating socket connection to:', socketUrl)
+    console.log('User token:', user.token ? 'Present' : 'Missing')
+    console.log('User ID:', user.id)
+
+    const newSocket = io(socketUrl, {
+      auth: {
+        token: user.token,
+        userId: user.id || user._id,
+      },
+      autoConnect: true,
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    })
+
+    newSocket.on('connect', () => {
+      setIsConnected(true)
       setConnectionError(null)
-      
-      const newSocket = io(socketUrl, {
-        auth: {
-          token: user.token,
-          userId: user.id || user._id,
-        },
-        autoConnect: true,
-        transports: ['websocket', 'polling'],
-        timeout: 20000,
-        forceNew: true,
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      })
+      console.log('Socket connected successfully')
+    })
 
-      newSocket.on('connect', () => {
-        setIsConnected(true)
-        setConnectionError(null)
-        console.log('Socket connected successfully')
-      })
+    newSocket.on('disconnect', (reason) => {
+      setIsConnected(false)
+      console.log('Socket disconnected:', reason)
+    })
 
-      newSocket.on('disconnect', (reason) => {
-        setIsConnected(false)
-        console.log('Socket disconnected:', reason)
-      })
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error)
+      setIsConnected(false)
+      setConnectionError(error.message || 'Connection failed')
+    })
 
-      newSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error)
-        setIsConnected(false)
-        setConnectionError(error.message || 'Connection failed')
-      })
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error)
+      setConnectionError(error.message || 'Socket error')
+    })
 
-      newSocket.on('error', (error) => {
-        console.error('Socket error:', error)
-        setConnectionError(error.message || 'Socket error')
-      })
+    // Use setTimeout to avoid calling setState synchronously in effect
+    setTimeout(() => {
+      setSocket(newSocket)
+    }, 0)
 
-      // Use setTimeout to avoid calling setState synchronously in effect
-      setTimeout(() => {
-        setSocket(newSocket)
-      }, 0)
-
-      return () => {
-        console.log('Cleaning up socket connection')
-        newSocket.close()
-        setSocket(null)
-        setIsConnected(false)
-        setConnectionError(null)
-      }
-    } else if (!isAuthenticated) {
-      // Clean up socket when user logs out
-      if (socket) {
-        console.log('User logged out, closing socket')
-        socket.close()
-        setSocket(null)
-        setIsConnected(false)
-        setConnectionError(null)
-      }
+    return () => {
+      console.log('Cleaning up socket connection')
+      newSocket.close()
+      setSocket(null)
+      setIsConnected(false)
+      setConnectionError(null)
     }
   }, [isAuthenticated, user])
 
