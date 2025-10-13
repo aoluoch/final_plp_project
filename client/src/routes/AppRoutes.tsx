@@ -37,6 +37,7 @@ import NotFound from '../pages/NotFound'
 
 // Components
 import ProtectedRoute from './ProtectedRoute'
+import PublicRoute from './PublicRoute'
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, user } = useAuth()
@@ -49,12 +50,12 @@ const AppRoutes: React.FC = () => {
       {/* Direct login route for convenience */}
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
 
-      {/* Auth Routes */}
-      <Route path="/auth" element={<AuthLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
+      {/* Auth Routes (public only) */}
+      <Route path="/auth" element={<PublicRoute><AuthLayout /></PublicRoute>}>
+        <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
       </Route>
 
       {/* Admin Routes */}
