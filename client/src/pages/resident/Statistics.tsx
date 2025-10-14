@@ -140,7 +140,7 @@ const Statistics: React.FC = () => {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {charts.reportsByStatus.map((entry, index) => (
+                {charts.reportsByStatus.map((entry: { status: string; count: number }, index: number) => (
                   <Cell key={`cell-${index}`} fill={statusColors[entry.status as keyof typeof statusColors] || '#8884d8'} />
                 ))}
               </Pie>
