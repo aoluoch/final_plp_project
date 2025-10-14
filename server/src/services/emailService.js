@@ -141,6 +141,13 @@ const emailTemplates = {
 const sendEmail = async (to, templateName, templateData) => {
   try {
     const transporter = createTransporter();
+    try {
+      await transporter.verify();
+      console.log('SMTP transporter verified');
+    } catch (verifyError) {
+      console.error('SMTP verify failed:', verifyError);
+      throw verifyError;
+    }
     const template = emailTemplates[templateName];
     
     if (!template) {
@@ -149,8 +156,9 @@ const sendEmail = async (to, templateName, templateData) => {
 
     const emailContent = template(templateData);
 
+    const fromAddress = process.env.EMAIL_FROM || 'Wastewise <noreply@wastewise.local>'
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: fromAddress,
       to,
       subject: emailContent.subject,
       html: emailContent.html
@@ -160,7 +168,13 @@ const sendEmail = async (to, templateName, templateData) => {
     console.log('Email sent successfully:', result.messageId);
     return result;
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('Email sending failed:', {
+      message: error && error.message,
+      code: error && error.code,
+      command: error && error.command,
+      response: error && error.response,
+      responseCode: error && error.responseCode
+    });
     throw error;
   }
 };
@@ -169,6 +183,13 @@ const sendEmail = async (to, templateName, templateData) => {
 const sendBulkEmails = async (recipients, templateName, templateData) => {
   try {
     const transporter = createTransporter();
+    try {
+      await transporter.verify();
+      console.log('SMTP transporter verified');
+    } catch (verifyError) {
+      console.error('SMTP verify failed:', verifyError);
+      throw verifyError;
+    }
     const template = emailTemplates[templateName];
     
     if (!template) {
@@ -177,8 +198,9 @@ const sendBulkEmails = async (recipients, templateName, templateData) => {
 
     const emailContent = template(templateData);
 
+    const fromAddress = process.env.EMAIL_FROM || 'Wastewise <noreply@wastewise.local>'
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: fromAddress,
       to: recipients.join(', '),
       subject: emailContent.subject,
       html: emailContent.html
@@ -188,7 +210,13 @@ const sendBulkEmails = async (recipients, templateName, templateData) => {
     console.log('Bulk email sent successfully:', result.messageId);
     return result;
   } catch (error) {
-    console.error('Bulk email sending failed:', error);
+    console.error('Bulk email sending failed:', {
+      message: error && error.message,
+      code: error && error.code,
+      command: error && error.command,
+      response: error && error.response,
+      responseCode: error && error.responseCode
+    });
     throw error;
   }
 };
@@ -197,9 +225,17 @@ const sendBulkEmails = async (recipients, templateName, templateData) => {
 const sendCustomEmail = async (to, subject, html) => {
   try {
     const transporter = createTransporter();
+    try {
+      await transporter.verify();
+      console.log('SMTP transporter verified');
+    } catch (verifyError) {
+      console.error('SMTP verify failed:', verifyError);
+      throw verifyError;
+    }
 
+    const fromAddress = process.env.EMAIL_FROM || 'Wastewise <noreply@wastewise.local>'
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: fromAddress,
       to,
       subject,
       html
@@ -209,7 +245,13 @@ const sendCustomEmail = async (to, subject, html) => {
     console.log('Custom email sent successfully:', result.messageId);
     return result;
   } catch (error) {
-    console.error('Custom email sending failed:', error);
+    console.error('Custom email sending failed:', {
+      message: error && error.message,
+      code: error && error.code,
+      command: error && error.command,
+      response: error && error.response,
+      responseCode: error && error.responseCode
+    });
     throw error;
   }
 };
