@@ -38,6 +38,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [searchError, setSearchError] = useState<string | null>(null)
   const lastCenterRef = useRef<{ lat: number; lng: number } | null>(null)
   const lastZoomRef = useRef<number | null>(null)
+  const mapInitializedRef = useRef(false)
 
   const runSearch = async () => {
     setSearchError(null)
@@ -82,7 +83,7 @@ const MapView: React.FC<MapViewProps> = ({
   }
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return
+    if (!mapRef.current || mapInstanceRef.current || mapInitializedRef.current) return
 
     const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
     if (!token) {
@@ -124,6 +125,7 @@ const MapView: React.FC<MapViewProps> = ({
         })
 
         mapInstanceRef.current = map
+        mapInitializedRef.current = true
 
         map.on('load', () => {
           if (cancelled) return
@@ -133,11 +135,7 @@ const MapView: React.FC<MapViewProps> = ({
           lastZoomRef.current = map.getZoom()
         })
 
-        if (interactive && typeof onMapClick === 'function') {
-          map.on('click', (e: MapMouseEvent) => {
-            onMapClick({ lat: e.lngLat.lat, lng: e.lngLat.lng })
-          })
-        }
+        // Click handler will be set up in a separate effect
 
         map.on('moveend', () => {
           const c = map.getCenter()
@@ -155,9 +153,55 @@ const MapView: React.FC<MapViewProps> = ({
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
+        mapInitializedRef.current = false
       }
     }
-  }, [center.lat, center.lng, zoom, interactive, onMapClick])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle center changes without recreating the map
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return
+    
+    const map = mapInstanceRef.current
+    const currentCenter = map.getCenter()
+    const newCenter = [center.lng, center.lat] as [number, number]
+    
+    // Only move if the center has actually changed
+    if (Math.abs(currentCenter.lng - center.lng) > 0.0001 || Math.abs(currentCenter.lat - center.lat) > 0.0001) {
+      map.setCenter(newCenter)
+    }
+  }, [center.lat, center.lng, mapReady])
+
+  // Handle zoom changes without recreating the map
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return
+    
+    const map = mapInstanceRef.current
+    const currentZoom = map.getZoom()
+    
+    // Only change zoom if it has actually changed
+    if (Math.abs(currentZoom - zoom) > 0.1) {
+      map.setZoom(zoom)
+    }
+  }, [zoom, mapReady])
+
+  // Handle interactive changes
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return
+    
+    const map = mapInstanceRef.current
+    
+    if (interactive && typeof onMapClick === 'function') {
+      const handleClick = (e: MapMouseEvent) => {
+        onMapClick({ lat: e.lngLat.lat, lng: e.lngLat.lng })
+      }
+      map.on('click', handleClick)
+      
+      return () => {
+        map.off('click', handleClick)
+      }
+    }
+  }, [interactive, onMapClick, mapReady])
 
   useEffect(() => {
     if (!mapReady || !mapInstanceRef.current) return
