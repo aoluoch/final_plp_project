@@ -30,6 +30,7 @@ import ResidentDashboard from '../pages/resident/Dashboard'
 import ReportForm from '../pages/resident/ReportForm'
 import PickupSchedule from '../pages/resident/PickupSchedule'
 import Notifications from '../pages/resident/Notifications'
+import Statistics from '../pages/resident/Statistics'
 import Feed from '../pages/reports/Feed'
 import ReportDetail from '../pages/reports/ReportDetail'
 
@@ -102,6 +103,7 @@ const AppRoutes: React.FC = () => {
       >
         <Route path="dashboard" element={<ResidentDashboard />} />
         <Route path="report" element={<ReportForm />} />
+        <Route path="statistics" element={<Statistics />} />
         <Route path="schedule" element={<PickupSchedule />} />
         <Route path="notifications" element={<Notifications />} />
         <Route index element={<Navigate to="dashboard" replace />} />

@@ -15,6 +15,7 @@ const ResidentLayout: React.FC = () => {
   const residentNavItems = [
     { name: 'Dashboard', href: '/resident/dashboard', icon: '🏠' },
     { name: 'Report Waste', href: '/resident/report', icon: '📝' },
+    { name: 'My Statistics', href: '/resident/statistics', icon: '📊' },
     { name: 'Community Feed', href: '/reports', icon: '📰' },
     { name: 'Schedule', href: '/resident/schedule', icon: '📅' },
     { name: 'Notifications', href: '/resident/notifications', icon: '🔔' },
