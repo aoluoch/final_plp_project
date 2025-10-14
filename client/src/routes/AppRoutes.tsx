@@ -107,23 +107,18 @@ const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Authenticated Reports Feed and Detail */}
+      {/* Reports Routes with Resident Layout */}
       <Route 
         path="/reports" 
         element={
           <ProtectedRoute>
-            <Feed />
+            <ResidentLayout />
           </ProtectedRoute>
         }
-      />
-      <Route 
-        path="/reports/:id" 
-        element={
-          <ProtectedRoute>
-            <ReportDetail />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route index element={<Feed />} />
+        <Route path=":id" element={<ReportDetail />} />
+      </Route>
 
       {/* Redirect authenticated users to their dashboard */}
       <Route 
