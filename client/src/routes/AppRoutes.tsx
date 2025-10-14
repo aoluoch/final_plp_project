@@ -30,6 +30,8 @@ import ResidentDashboard from '../pages/resident/Dashboard'
 import ReportForm from '../pages/resident/ReportForm'
 import PickupSchedule from '../pages/resident/PickupSchedule'
 import Notifications from '../pages/resident/Notifications'
+import Feed from '../pages/reports/Feed'
+import ReportDetail from '../pages/reports/ReportDetail'
 
 // Public Pages
 import Home from '../pages/Home'
@@ -104,6 +106,24 @@ const AppRoutes: React.FC = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
+
+      {/* Authenticated Reports Feed and Detail */}
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <Feed />
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/reports/:id" 
+        element={
+          <ProtectedRoute>
+            <ReportDetail />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Redirect authenticated users to their dashboard */}
       <Route 

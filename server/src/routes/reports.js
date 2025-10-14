@@ -6,6 +6,7 @@ const Notification = require('../models/Notification');
 const { authMiddleware, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validate');
 const { uploadMultiple, deleteImages, extractPublicId } = require('../services/cloudinaryService');
+const { verifyImagesAreWaste } = require('../services/aiImageVerifier');
 
 const router = express.Router();
 
@@ -57,6 +58,19 @@ router.post('/', [
 
     // Extract image URLs from uploaded files
     const images = req.files.map(file => file.path);
+
+    // AI verify images depict waste
+    const aiDecision = await verifyImagesAreWaste(images)
+    if (!aiDecision.allowed) {
+      // Clean up uploaded images if rejected
+      const publicIds = req.files.map(file => extractPublicId(file.path));
+      await deleteImages(publicIds);
+      return res.status(400).json({
+        success: false,
+        message: 'Uploaded photos do not appear to depict waste.',
+        reasons: aiDecision.reasons
+      });
+    }
 
     // Create new report
     const report = new WasteReport({
@@ -215,6 +229,32 @@ router.get('/', [
   }
 });
 
+// @route   GET /api/reports/feed
+// @desc    Get all reports visible to logged-in users, newest first
+// @access  Private
+router.get('/feed', [
+  validate
+], async (req, res) => {
+  try {
+    const filter = {}
+    // Residents can see all reports (community feed)
+    // Collectors and Admins also see all
+    // No extra filter for now
+
+    const reports = await WasteReport.find(filter)
+      .populate('userId', 'firstName lastName email')
+      .sort({ createdAt: -1 })
+
+    res.json({ success: true, data: { reports } })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    })
+  }
+})
+
 // @route   GET /api/reports/:id
 // @desc    Get single report by ID
 // @access  Private
@@ -296,6 +336,18 @@ router.patch('/:id', [
       });
     }
 
+    // Residents can only update their own reports (allow editing description/notes only)
+    if (req.user.role === 'resident') {
+      if (report.userId.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied' })
+      }
+      const { description, notes } = req.body
+      if (typeof description === 'string') report.description = description
+      if (typeof notes === 'string') report.notes = notes
+      await report.save()
+      return res.json({ success: true, message: 'Report updated successfully', data: { report } })
+    }
+
     const { status, priority, assignedCollectorId, notes } = req.body;
     const oldStatus = report.status;
 
@@ -367,7 +419,7 @@ router.patch('/:id', [
 // @desc    Delete report (admin only)
 // @access  Private (Admin)
 router.delete('/:id', [
-  authorize('admin'),
+  authorize('admin', 'collector', 'resident'),
   validate
 ], async (req, res) => {
   try {
@@ -378,6 +430,11 @@ router.delete('/:id', [
         success: false,
         message: 'Report not found'
       });
+    }
+
+    // Only allow residents to delete their own
+    if (req.user.role === 'resident' && report.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Access denied' })
     }
 
     // Delete images from Cloudinary
