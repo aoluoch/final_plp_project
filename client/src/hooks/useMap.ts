@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Coordinates } from '../types'
 import { mapHelpers } from '../utils/mapHelpers'
 
@@ -18,6 +18,7 @@ interface UseMapReturn {
   handleMapClick: (coordinates: Coordinates) => void
   getCurrentLocation: () => Promise<Coordinates | null>
   calculateDistance: (coord1: Coordinates, coord2: Coordinates) => number
+  handleLocationSelection: (coordinates: Coordinates) => void
 }
 
 export function useMap(options: UseMapOptions = {}): UseMapReturn {
@@ -31,10 +32,16 @@ export function useMap(options: UseMapOptions = {}): UseMapReturn {
   const [zoom, setZoom] = useState(initialZoom)
   const [selectedLocation, setSelectedLocation] = useState<Coordinates | null>(null)
 
-  const handleMapClick = useCallback((coordinates: Coordinates) => {
+  // Auto-center on selected location only when explicitly set
+  const handleLocationSelection = useCallback((coordinates: Coordinates) => {
     setSelectedLocation(coordinates)
+    setCenter(coordinates) // Center immediately when user selects
     onLocationChange?.(coordinates)
   }, [onLocationChange])
+
+  const handleMapClick = useCallback((coordinates: Coordinates) => {
+    handleLocationSelection(coordinates)
+  }, [handleLocationSelection])
 
   const getCurrentLocation = useCallback((): Promise<Coordinates | null> => {
     return new Promise((resolve) => {
@@ -49,6 +56,8 @@ export function useMap(options: UseMapOptions = {}): UseMapReturn {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           }
+          // Set the location and center the map
+          handleLocationSelection(coordinates)
           resolve(coordinates)
         },
         (error) => {
@@ -62,21 +71,11 @@ export function useMap(options: UseMapOptions = {}): UseMapReturn {
         }
       )
     })
-  }, [])
+  }, [handleLocationSelection])
 
   const calculateDistance = useCallback((coord1: Coordinates, coord2: Coordinates) => {
     return mapHelpers.calculateDistance(coord1, coord2)
   }, [])
-
-  // Auto-center on selected location
-  useEffect(() => {
-    if (selectedLocation) {
-      // Use setTimeout to avoid calling setState synchronously in effect
-      setTimeout(() => {
-        setCenter(selectedLocation)
-      }, 0)
-    }
-  }, [selectedLocation])
 
   return {
     center,
@@ -88,5 +87,6 @@ export function useMap(options: UseMapOptions = {}): UseMapReturn {
     handleMapClick,
     getCurrentLocation,
     calculateDistance,
+    handleLocationSelection,
   }
 }

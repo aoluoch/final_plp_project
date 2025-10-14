@@ -1,6 +1,14 @@
 import { axiosInstance } from './axiosInstance'
 
 export const reportsApi = {
+	create: async (formData: FormData) => {
+		const { data } = await axiosInstance.post('/reports', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data'
+			}
+		})
+		return data.data.report
+	},
 	getFeed: async () => {
 		const { data } = await axiosInstance.get('/reports/feed')
 		return data.data.reports

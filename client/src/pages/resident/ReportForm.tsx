@@ -5,9 +5,12 @@ import MapView from '../../components/MapView'
 import { WASTE_TYPES, PRIORITY_LEVELS } from '../../utils/constants'
 import { validators } from '../../utils/validators'
 import { useMap } from '../../hooks/useMap'
+import { useToast } from '../../context/ToastContext'
+import { reportsApi } from '../../api/reportsApi'
 
 const ReportForm: React.FC = () => {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [formData, setFormData] = useState({
     type: '',
     description: '',
@@ -18,10 +21,11 @@ const ReportForm: React.FC = () => {
   const [images, setImages] = useState<File[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<string>('')
 
   const { selectedLocation, handleMapClick, getCurrentLocation, setSelectedLocation } = useMap({
     onLocationChange: (coordinates) => {
-      console.log('Location selected:', coordinates)
+      console.log('Location selected:', coordinates.lat, coordinates.lng)
     },
   })
 
@@ -65,6 +69,10 @@ const ReportForm: React.FC = () => {
     if (!selectedLocation) {
       newErrors.location = 'Please select a location on the map'
     }
+    
+    if (!selectedAddress.trim()) {
+      newErrors.address = 'Please enter an address for the selected location'
+    }
 
     if (images.length < 2) {
       newErrors.images = 'Please upload at least 2 images'
@@ -79,22 +87,80 @@ const ReportForm: React.FC = () => {
     
     if (!validateForm()) return
 
+    if (!selectedLocation) {
+      showToast({ message: 'Please select a location on the map', type: 'error' })
+      return
+    }
+
+    if (!selectedAddress) {
+      showToast({ message: 'Please enter an address for the selected location', type: 'error' })
+      return
+    }
+
     try {
       setIsLoading(true)
       
-      // Here you would call the API to create the report
-      console.log('Creating report:', {
-        ...formData,
-        location: selectedLocation,
-        images,
+      // Debug logging
+      console.log('Form data:', formData)
+      console.log('Selected location:', selectedLocation)
+      console.log('Selected address:', selectedAddress)
+      console.log('Images count:', images.length)
+      
+      // Create FormData for multipart/form-data request
+      const formDataToSend = new FormData()
+      formDataToSend.append('type', formData.type)
+      formDataToSend.append('description', formData.description)
+      
+      // Send location as JSON string to avoid parsing issues
+      const locationData = {
+        address: selectedAddress,
+        coordinates: {
+          lat: selectedLocation.lat,
+          lng: selectedLocation.lng
+        }
+      }
+      formDataToSend.append('location', JSON.stringify(locationData))
+      
+      formDataToSend.append('estimatedVolume', formData.estimatedVolume)
+      formDataToSend.append('priority', formData.priority)
+      if (formData.notes) {
+        formDataToSend.append('notes', formData.notes)
+      }
+      
+      // Add images
+      images.forEach((image) => {
+        formDataToSend.append('images', image)
       })
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Debug FormData contents
+      console.log('FormData contents:')
+      for (const [key, value] of formDataToSend.entries()) {
+        console.log(key, value)
+      }
       
+      // Call the API
+      await reportsApi.create(formDataToSend)
+      
+      showToast({ message: 'Waste report submitted successfully!', type: 'success' })
       navigate('/resident/dashboard')
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating report:', error)
+      
+      // Handle validation errors from the server
+      if (error && typeof error === 'object' && 'errors' in error) {
+        const validationError = error as { message: string; errors: Record<string, string[]> }
+        console.error('Validation errors:', validationError.errors)
+        
+        // Show the first validation error
+        const firstError = Object.values(validationError.errors)[0]?.[0]
+        showToast({ 
+          message: firstError || validationError.message || 'Validation failed', 
+          type: 'error' 
+        })
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to submit waste report. Please try again.'
+        showToast({ message: errorMessage, type: 'error' })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -237,6 +303,22 @@ const ReportForm: React.FC = () => {
                   Selected: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
                 </p>
               )}
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  value={selectedAddress}
+                  onChange={(e) => setSelectedAddress(e.target.value)}
+                  placeholder="Enter the address for the selected location"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+                {errors.address && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.address}</p>
+                )}
+              </div>
               
               {errors.location && (
                 <p className="text-sm text-red-600">{errors.location}</p>

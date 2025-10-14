@@ -25,16 +25,26 @@ router.post('/', [
     .trim()
     .isLength({ min: 10, max: 500 })
     .withMessage('Description must be between 10 and 500 characters'),
-  body('location.address')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Address is required'),
-  body('location.coordinates.lat')
-    .isFloat({ min: -90, max: 90 })
-    .withMessage('Invalid latitude'),
-  body('location.coordinates.lng')
-    .isFloat({ min: -180, max: 180 })
-    .withMessage('Invalid longitude'),
+  body('location')
+    .custom((value) => {
+      try {
+        const location = JSON.parse(value);
+        if (!location.address || !location.coordinates || 
+            typeof location.coordinates.lat !== 'number' || 
+            typeof location.coordinates.lng !== 'number') {
+          throw new Error('Invalid location format');
+        }
+        if (location.coordinates.lat < -90 || location.coordinates.lat > 90) {
+          throw new Error('Invalid latitude');
+        }
+        if (location.coordinates.lng < -180 || location.coordinates.lng > 180) {
+          throw new Error('Invalid longitude');
+        }
+        return true;
+      } catch (error) {
+        throw new Error('Invalid location data');
+      }
+    }),
   body('estimatedVolume')
     .isFloat({ min: 0.1 })
     .withMessage('Estimated volume must be greater than 0'),
@@ -43,6 +53,10 @@ router.post('/', [
     .trim()
     .isLength({ max: 200 })
     .withMessage('Notes cannot exceed 200 characters'),
+  body('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high', 'urgent'])
+    .withMessage('Invalid priority level'),
   validate
 ], async (req, res) => {
   try {
@@ -54,7 +68,10 @@ router.post('/', [
       });
     }
 
-    const { type, description, location, estimatedVolume, notes } = req.body;
+    const { type, description, location: locationString, estimatedVolume, notes, priority } = req.body;
+    
+    // Parse location JSON
+    const location = JSON.parse(locationString);
 
     // Extract image URLs from uploaded files
     const images = req.files.map(file => file.path);
@@ -86,7 +103,8 @@ router.post('/', [
       },
       images,
       estimatedVolume: parseFloat(estimatedVolume),
-      notes
+      notes,
+      priority: priority || 'medium'
     });
 
     await report.save();
