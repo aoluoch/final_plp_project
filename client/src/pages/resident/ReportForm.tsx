@@ -19,7 +19,7 @@ const ReportForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
 
-  const { selectedLocation, handleMapClick, getCurrentLocation } = useMap({
+  const { selectedLocation, handleMapClick, getCurrentLocation, setSelectedLocation } = useMap({
     onLocationChange: (coordinates) => {
       console.log('Location selected:', coordinates)
     },
@@ -64,6 +64,10 @@ const ReportForm: React.FC = () => {
 
     if (!selectedLocation) {
       newErrors.location = 'Please select a location on the map'
+    }
+
+    if (images.length < 2) {
+      newErrors.images = 'Please upload at least 2 images'
     }
 
     setErrors(newErrors)
@@ -208,7 +212,7 @@ const ReportForm: React.FC = () => {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => console.log('Clear location')}
+                    onClick={() => setSelectedLocation(null)}
                   >
                     Clear Location
                   </Button>
@@ -243,7 +247,7 @@ const ReportForm: React.FC = () => {
           {/* Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Photos (Optional)
+              Photos (Minimum 2)
             </label>
             <input
               type="file"
@@ -253,8 +257,11 @@ const ReportForm: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Upload up to 5 images (max 5MB each)
+              Upload at least 2 and up to 5 images (max 5MB each)
             </p>
+            {errors.images && (
+              <p className="mt-1 text-sm text-red-600">{errors.images}</p>
+            )}
             
             {images.length > 0 && (
               <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
