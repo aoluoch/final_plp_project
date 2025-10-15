@@ -148,13 +148,20 @@ const ReportForm: React.FC = () => {
       
       // Handle validation errors from the server
       if (error && typeof error === 'object' && 'errors' in error) {
-        const validationError = error as { message: string; errors: Record<string, string[]> }
+        const validationError = error as { message: string; errors?: Record<string, string[]> }
         console.error('Validation errors:', validationError.errors)
         
-        // Show the first validation error
-        const firstError = Object.values(validationError.errors)[0]?.[0]
+        // Show the first validation error if errors exist
+        let errorMessage = validationError.message || 'Validation failed'
+        if (validationError.errors && typeof validationError.errors === 'object') {
+          const firstError = Object.values(validationError.errors)[0]?.[0]
+          if (firstError) {
+            errorMessage = firstError
+          }
+        }
+        
         showToast({ 
-          message: firstError || validationError.message || 'Validation failed', 
+          message: errorMessage, 
           type: 'error' 
         })
       } else {

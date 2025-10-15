@@ -5,7 +5,7 @@ const baseURL = '/api'
 
 export const axiosInstance = axios.create({
   baseURL,
-  timeout: 15000, // Increased timeout to 15 seconds
+  timeout: 60000, // Increased timeout to 60 seconds for AI image processing
   headers: {
     'Content-Type': 'application/json',
   },

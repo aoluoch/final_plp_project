@@ -16,14 +16,23 @@ async function verifyImagesAreWaste(imageUrls) {
 		return { allowed: true }
 	}
 
+	// Add overall timeout for the entire AI verification process
+	const timeoutPromise = new Promise((_, reject) => {
+		setTimeout(() => reject(new Error('AI verification timeout')), 45000) // 45 second timeout
+	})
+
 	try {
+		const verificationPromise = (async () => {
 		const genAI = new GoogleGenerativeAI(apiKey)
 		const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
 		// Fetch image bytes and run a concise classification prompt
 		const imageParts = []
 		for (const url of imageUrls) {
-			const res = await axios.get(url, { responseType: 'arraybuffer' })
+			const res = await axios.get(url, { 
+				responseType: 'arraybuffer',
+				timeout: 30000 // 30 second timeout for image download
+			})
 			// Infer mime type from content-type header
 			const mime = res.headers['content-type'] || 'image/jpeg'
 			imageParts.push({ inlineData: { data: Buffer.from(res.data).toString('base64'), mimeType: mime } })
@@ -52,6 +61,10 @@ async function verifyImagesAreWaste(imageUrls) {
 			return { allowed: parsed.allowed, reasons: Array.isArray(parsed.reasons) ? parsed.reasons : undefined }
 		}
 		return { allowed: false, reasons: ['AI response invalid'] }
+		})()
+
+		// Race between verification and timeout
+		return await Promise.race([verificationPromise, timeoutPromise])
 	} catch (err) {
 		// On AI errors, fail-open to avoid blocking legitimate users due to transient issues
 		if (process.env.NODE_ENV === 'development') {
