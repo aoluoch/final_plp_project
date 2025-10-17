@@ -30,11 +30,13 @@ const upload = multer({
     files: 5 // Maximum 5 files
   },
   fileFilter: (req, file, cb) => {
+    console.log('File filter - MIME type:', file.mimetype, 'Field name:', file.fieldname);
     const allowedTypes = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/webp').split(',');
     
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
+      console.log('File rejected - MIME type:', file.mimetype, 'not in allowed types:', allowedTypes);
       cb(new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`), false);
     }
   }

@@ -104,11 +104,14 @@ router.post('/', [
     await Notification.insertMany(notifications);
 
     // Emit socket event
-    req.app.get('io').emit('assign_task', {
-      pickupTask,
-      report,
-      collector
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('assign_task', {
+        pickupTask,
+        report,
+        collector
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -301,10 +304,13 @@ router.patch('/:id/start', [
     );
 
     // Emit socket event
-    req.app.get('io').emit('task_update', {
-      pickupTask,
-      status: 'in_progress'
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('task_update', {
+        pickupTask,
+        status: 'in_progress'
+      });
+    }
 
     res.json({
       success: true,
@@ -395,10 +401,13 @@ router.patch('/:id/complete', [
     await Notification.insertMany(notifications);
 
     // Emit socket event
-    req.app.get('io').emit('task_update', {
-      pickupTask,
-      status: 'completed'
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('task_update', {
+        pickupTask,
+        status: 'completed'
+      });
+    }
 
     res.json({
       success: true,
@@ -473,10 +482,13 @@ router.patch('/:id/cancel', [
     );
 
     // Emit socket event
-    req.app.get('io').emit('task_update', {
-      pickupTask,
-      status: 'cancelled'
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('task_update', {
+        pickupTask,
+        status: 'cancelled'
+      });
+    }
 
     res.json({
       success: true,

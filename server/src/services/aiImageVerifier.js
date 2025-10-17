@@ -24,7 +24,7 @@ async function verifyImagesAreWaste(imageUrls) {
 	try {
 		const verificationPromise = (async () => {
 		const genAI = new GoogleGenerativeAI(apiKey)
-		const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+		const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' })
 
 		// Fetch image bytes and run a concise classification prompt
 		const imageParts = []

@@ -268,9 +268,12 @@ router.post('/send', [
     const createdNotifications = await Notification.insertMany(notifications);
 
     // Emit socket event for real-time updates
-    req.app.get('io').emit('new_notification', {
-      notifications: createdNotifications
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_notification', {
+        notifications: createdNotifications
+      });
+    }
 
     res.status(201).json({
       success: true,

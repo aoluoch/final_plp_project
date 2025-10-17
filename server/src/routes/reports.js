@@ -18,6 +18,35 @@ router.use(authMiddleware);
 // @access  Private
 router.post('/', [
   uploadMultiple,
+  // Multer error handler
+  (err, req, res, next) => {
+    if (err) {
+      console.error('Multer error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'File too large. Maximum size is 5MB per file.'
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Too many files. Maximum 5 files allowed.'
+        });
+      }
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({
+          success: false,
+          message: 'Unexpected field name.'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'File upload error'
+      });
+    }
+    next();
+  },
   body('type')
     .isIn(['household', 'electronic', 'hazardous', 'organic', 'recyclable', 'construction', 'other'])
     .withMessage('Invalid waste type'),
@@ -60,8 +89,12 @@ router.post('/', [
   validate
 ], async (req, res) => {
   try {
+    console.log('Reports route - req.files:', req.files);
+    console.log('Reports route - req.body:', req.body);
+    
     // Check if images were uploaded
     if (!req.files || req.files.length === 0) {
+      console.log('No files uploaded');
       return res.status(400).json({
         success: false,
         message: 'At least one image is required'
@@ -127,10 +160,13 @@ router.post('/', [
     await Notification.insertMany(notifications);
 
     // Emit socket event
-    req.app.get('io').emit('new_report', {
-      report: report,
-      user: req.user
-    });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_report', {
+        report: report,
+        user: req.user
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -138,6 +174,8 @@ router.post('/', [
       data: { report }
     });
   } catch (error) {
+    console.error('Reports route error:', error);
+    
     // Clean up uploaded images if report creation fails
     if (req.files) {
       const publicIds = req.files.map(file => extractPublicId(file.path));
@@ -412,11 +450,14 @@ router.patch('/:id', [
       }
 
       // Emit socket event
-      req.app.get('io').emit('task_update', {
-        report: report,
-        oldStatus,
-        newStatus: status
-      });
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('task_update', {
+          report: report,
+          oldStatus,
+          newStatus: status
+        });
+      }
     }
 
     res.json({
