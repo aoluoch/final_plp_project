@@ -43,7 +43,18 @@ const ReportForm: React.FC = () => {
     const files = Array.from(e.target.files || [])
     const validFiles = files.filter(file => {
       const sizeError = validators.fileSize(5 * 1024 * 1024)(file)
-      const typeError = validators.fileType(['image/jpeg', 'image/png', 'image/webp'])(file)
+      const typeError = validators.fileType([
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png', 
+        'image/webp', 
+        'image/gif', 
+        'image/bmp', 
+        'image/tiff', 
+        'image/svg+xml', 
+        'image/x-icon', 
+        'image/vnd.microsoft.icon'
+      ])(file)
       return !sizeError && !typeError
     })
     
@@ -341,12 +352,12 @@ const ReportForm: React.FC = () => {
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
               onChange={handleImageChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Upload at least 2 and up to 5 images (max 5MB each)
+              Upload at least 2 and up to 5 images (max 5MB each). Supported formats: JPEG, PNG, WebP, GIF, BMP, TIFF, SVG, ICO
             </p>
             {errors.images && (
               <p className="mt-1 text-sm text-red-600">{errors.images}</p>

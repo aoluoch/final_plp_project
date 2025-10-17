@@ -14,7 +14,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'wastewise',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'svg', 'ico'],
     transformation: [
       { width: 1200, height: 1200, crop: 'limit', quality: 'auto' },
       { fetch_format: 'auto' }
@@ -31,7 +31,7 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     console.log('File filter - MIME type:', file.mimetype, 'Field name:', file.fieldname);
-    const allowedTypes = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/webp').split(',');
+    const allowedTypes = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/svg+xml,image/x-icon,image/vnd.microsoft.icon').split(',');
     
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
