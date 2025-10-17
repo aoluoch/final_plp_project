@@ -17,6 +17,7 @@ const reportRoutes = require('./routes/reports');
 const pickupRoutes = require('./routes/pickups');
 const notificationRoutes = require('./routes/notifications');
 const statisticsRoutes = require('./routes/statistics');
+const adminRoutes = require('./routes/admin');
 
 // Import middleware
 const errorHandler = require('./middlewares/errorHandler');
@@ -88,6 +89,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/pickups', pickupRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/statistics', statisticsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Socket.io setup
 setupSocketHandlers(io);

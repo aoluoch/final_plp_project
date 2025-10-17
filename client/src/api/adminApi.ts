@@ -36,6 +36,59 @@ export const adminApi = {
     return response.data.data
   },
 
+  async getReports(filters?: {
+    page?: number
+    limit?: number
+    status?: string
+    type?: string
+    priority?: string
+    search?: string
+  }): Promise<{ reports: any[]; pagination: any }> {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, value.toString())
+        }
+      })
+    }
+
+    const response = await axiosInstance.get<ApiResponse<{ reports: any[]; pagination: any }>>(
+      `/admin/reports?${params.toString()}`
+    )
+    return response.data.data
+  },
+
+  async getUsers(filters?: {
+    page?: number
+    limit?: number
+    role?: string
+    status?: string
+    search?: string
+  }): Promise<{ users: any[]; pagination: any }> {
+    const params = new URLSearchParams()
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, value.toString())
+        }
+      })
+    }
+
+    const response = await axiosInstance.get<ApiResponse<{ users: any[]; pagination: any }>>(
+      `/admin/users?${params.toString()}`
+    )
+    return response.data.data
+  },
+
+  async updateReportStatus(reportId: string, status: string, notes?: string): Promise<void> {
+    await axiosInstance.patch(`/admin/reports/${reportId}/status`, { status, notes })
+  },
+
+  async updateUserStatus(userId: string, isActive: boolean): Promise<void> {
+    await axiosInstance.patch(`/admin/users/${userId}/status`, { isActive })
+  },
+
   async getReportAnalytics(dateRange?: { start: string; end: string }): Promise<ReportAnalytics> {
     const params = new URLSearchParams()
     if (dateRange) {
@@ -107,5 +160,30 @@ export const adminApi = {
   async getSystemSettings(): Promise<Record<string, unknown>> {
     const response = await axiosInstance.get('/admin/settings')
     return response.data.data
+  },
+
+  async exportReports(format: 'csv' | 'excel', filters?: Record<string, unknown>): Promise<Blob> {
+    const params = new URLSearchParams()
+    params.append('format', format)
+    
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          params.append(key, value.toString())
+        }
+      })
+    }
+
+    const response = await axiosInstance.get(`/admin/export/reports?${params.toString()}`, {
+      responseType: 'blob',
+    })
+    return response.data
+  },
+
+  async exportUsers(format: 'csv' | 'excel'): Promise<Blob> {
+    const response = await axiosInstance.get(`/admin/export/users?format=${format}`, {
+      responseType: 'blob',
+    })
+    return response.data
   },
 }
