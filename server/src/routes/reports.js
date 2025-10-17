@@ -297,12 +297,18 @@ router.get('/feed', [
     // Collectors and Admins also see all
     // No extra filter for now
 
+    console.log('Fetching reports from database...')
     const reports = await WasteReport.find(filter)
       .populate('userId', 'firstName lastName email')
+      .select('type description images location status priority estimatedVolume notes userId createdAt updatedAt')
       .sort({ createdAt: -1 })
+
+    console.log(`Found ${reports.length} reports in database`)
+    console.log('Report IDs:', reports.map(r => r._id))
 
     res.json({ success: true, data: { reports } })
   } catch (error) {
+    console.error('Error fetching reports:', error)
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -318,16 +324,26 @@ router.get('/:id', [
   validate
 ], async (req, res) => {
   try {
+    console.log('Fetching report by ID:', req.params.id)
     const report = await WasteReport.findById(req.params.id)
       .populate('userId', 'firstName lastName email phone')
       .populate('assignedCollectorId', 'firstName lastName email phone');
 
     if (!report) {
+      console.log('Report not found:', req.params.id)
       return res.status(404).json({
         success: false,
         message: 'Report not found'
       });
     }
+
+    console.log('Report found:', {
+      id: report._id,
+      type: report.type,
+      hasLocation: !!report.location,
+      locationAddress: report.location?.address,
+      hasCoordinates: !!(report.location?.coordinates?.lat && report.location?.coordinates?.lng)
+    })
 
     // Check access permissions
     if (req.user.role === 'resident' && report.userId._id.toString() !== req.user._id.toString()) {
@@ -499,10 +515,34 @@ router.delete('/:id', [
     // Delete images from Cloudinary
     const publicIds = report.images.map(imageUrl => extractPublicId(imageUrl)).filter(Boolean);
     if (publicIds.length > 0) {
-      await deleteImages(publicIds);
+      try {
+        await deleteImages(publicIds);
+        console.log('Successfully deleted images from Cloudinary:', publicIds);
+      } catch (imageError) {
+        console.error('Error deleting images from Cloudinary:', imageError);
+        // Continue with database deletion even if image deletion fails
+      }
     }
 
-    await WasteReport.findByIdAndDelete(req.params.id);
+    // Delete the report from database using deleteOne for more explicit control
+    const deleteResult = await WasteReport.deleteOne({ _id: req.params.id });
+    
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found or already deleted'
+      });
+    }
+
+    console.log('Successfully deleted report from database:', req.params.id, 'Deleted count:', deleteResult.deletedCount);
+
+    // Verify deletion by trying to find the report again
+    const verifyDeleted = await WasteReport.findById(req.params.id);
+    if (verifyDeleted) {
+      console.error('WARNING: Report still exists after deletion!', req.params.id);
+    } else {
+      console.log('Verification: Report successfully deleted from database');
+    }
 
     res.json({
       success: true,
