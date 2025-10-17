@@ -55,6 +55,14 @@ router.get('/resident', [
       createdAt: { $gte: sevenDaysAgo }
     });
 
+    // Get recent reports (last 5) for dashboard
+    const recentReports = await WasteReport.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('type description status createdAt updatedAt');
+
+    console.log('Recent reports for user', userId, ':', recentReports.length, 'reports found');
+
     // Calculate daily reports for last 30 days
     const dailyReports = [];
     for (let i = 29; i >= 0; i--) {
@@ -126,6 +134,7 @@ router.get('/resident', [
           avgResponseTime: Math.round(avgResponseTime * 100) / 100,
           reportsLast7Days: reportsLast7Days.length
         },
+        recentReports,
         charts: {
           reportsByStatus: reportsByStatus.map(item => ({
             status: item._id,

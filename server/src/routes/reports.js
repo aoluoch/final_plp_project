@@ -367,10 +367,10 @@ router.get('/:id', [
 });
 
 // @route   PATCH /api/reports/:id
-// @desc    Update report (admin/collector)
-// @access  Private (Admin/Collector)
+// @desc    Update report (admin/collector/resident)
+// @access  Private (Admin/Collector/Resident)
 router.patch('/:id', [
-  authorize('admin', 'collector'),
+  authorize('admin', 'collector', 'resident'),
   body('status')
     .optional()
     .isIn(['pending', 'assigned', 'in_progress', 'completed', 'cancelled'])
@@ -388,6 +388,11 @@ router.patch('/:id', [
     .trim()
     .isLength({ max: 200 })
     .withMessage('Notes cannot exceed 200 characters'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage('Description must be between 1 and 500 characters'),
   validate
 ], async (req, res) => {
   try {
@@ -413,11 +418,45 @@ router.patch('/:id', [
       if (report.userId.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Access denied' })
       }
+      
+      console.log('Resident updating their own report:', {
+        reportId: req.params.id,
+        userId: req.user._id,
+        updates: req.body
+      })
+      
       const { description, notes } = req.body
-      if (typeof description === 'string') report.description = description
-      if (typeof notes === 'string') report.notes = notes
+      
+      // Update description if provided
+      if (description !== undefined) {
+        if (typeof description === 'string' && description.trim().length > 0) {
+          report.description = description.trim()
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: 'Description is required and cannot be empty'
+          })
+        }
+      }
+      
+      // Update notes if provided
+      if (notes !== undefined) {
+        report.notes = typeof notes === 'string' ? notes.trim() : ''
+      }
+      
       await report.save()
-      return res.json({ success: true, message: 'Report updated successfully', data: { report } })
+      
+      console.log('Report updated successfully by resident:', {
+        reportId: req.params.id,
+        newDescription: report.description,
+        newNotes: report.notes
+      })
+      
+      return res.json({ 
+        success: true, 
+        message: 'Report updated successfully', 
+        data: { report } 
+      })
     }
 
     const { status, priority, assignedCollectorId, notes } = req.body;

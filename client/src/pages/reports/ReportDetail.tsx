@@ -1,25 +1,57 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { reportsApi } from '../../api/reportsApi'
 import Button from '../../components/Button'
 import MapView from '../../components/MapView'
+import { useToast } from '../../context/ToastContext'
 
 const ReportDetail: React.FC = () => {
 	const { id = '' } = useParams()
 	const navigate = useNavigate()
 	const qc = useQueryClient()
+	const { showToast } = useToast()
 	const { data: report, isLoading } = useQuery({ queryKey: ['reports','detail', id], queryFn: () => reportsApi.getById(id), enabled: Boolean(id) })
 	const [description, setDescription] = useState('')
 	const [notes, setNotes] = useState('')
+	const [isEditing, setIsEditing] = useState(false)
+	const initializedRef = useRef(false)
 
 	const updateMutation = useMutation({
 		mutationFn: (payload: { description?: string; notes?: string }) => reportsApi.updateMine(id, payload),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ['reports','detail', id] })
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ['reports','detail', id] })
+			qc.invalidateQueries({ queryKey: ['reports','feed'] })
+			setIsEditing(false)
+			showToast({ message: 'Report updated successfully!', type: 'success' })
+		},
+		onError: (error: Error) => {
+			console.error('Error updating report:', error)
+			showToast({ message: error.message || 'Failed to update report. Please try again.', type: 'error' })
+		}
 	})
+
+	// Populate form fields when report data loads
+	useEffect(() => {
+		if (report && !initializedRef.current) {
+			// Use setTimeout to avoid synchronous setState in effect
+			setTimeout(() => {
+				setDescription(report.description || '')
+				setNotes(report.notes || '')
+				initializedRef.current = true
+			}, 0)
+		}
+	}, [report])
 	const deleteMutation = useMutation({
 		mutationFn: () => reportsApi.delete(id),
-		onSuccess: () => navigate('/reports')
+		onSuccess: () => {
+			showToast({ message: 'Report deleted successfully!', type: 'success' })
+			navigate('/reports')
+		},
+		onError: (error: Error) => {
+			console.error('Error deleting report:', error)
+			showToast({ message: error.message || 'Failed to delete report. Please try again.', type: 'error' })
+		}
 	})
 
 	if (isLoading || !report) return <div>Loading report...</div>
@@ -156,45 +188,110 @@ const ReportDetail: React.FC = () => {
 			</div>
 
 			<div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-				<h2 className="font-semibold mb-4">Edit Report (only your reports will be saved)</h2>
-				<div className="space-y-4">
-					<div>
-						<label className="block text-sm font-medium mb-1">Description</label>
-						<input 
-							value={description} 
-							onChange={(e) => setDescription(e.target.value)} 
-							placeholder="New description" 
-							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" 
-						/>
-					</div>
-					<div>
-						<label className="block text-sm font-medium mb-1">Notes</label>
-						<textarea 
-							value={notes} 
-							onChange={(e) => setNotes(e.target.value)} 
-							placeholder="Additional notes" 
-							rows={3}
-							className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" 
-						/>
-					</div>
-					<div className="flex space-x-3">
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="font-semibold">Edit Report</h2>
+					{!isEditing && (
 						<Button 
 							type="button" 
-							variant="primary" 
-							onClick={() => updateMutation.mutate({ description: description || undefined, notes: notes || undefined })}
-							disabled={updateMutation.isPending}
+							variant="outline" 
+							onClick={() => setIsEditing(true)}
 						>
-							{updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+							Edit Report
 						</Button>
-						<Button 
-							type="button" 
-							variant="ghost" 
-							onClick={() => deleteMutation.mutate()}
-							disabled={deleteMutation.isPending}
-						>
-							{deleteMutation.isPending ? 'Deleting...' : 'Delete Report'}
-						</Button>
+					)}
+				</div>
+				
+				{isEditing ? (
+					<div className="space-y-4">
+						<div>
+							<label className="block text-sm font-medium mb-1">
+								Description <span className="text-red-500">*</span>
+							</label>
+							<textarea 
+								value={description} 
+								onChange={(e) => setDescription(e.target.value)} 
+								placeholder="Describe the waste issue..." 
+								rows={3}
+								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" 
+								required
+							/>
+							<p className="text-xs text-gray-500 mt-1">
+								{description.length}/500 characters
+							</p>
+						</div>
+						<div>
+							<label className="block text-sm font-medium mb-1">Additional Notes</label>
+							<textarea 
+								value={notes} 
+								onChange={(e) => setNotes(e.target.value)} 
+								placeholder="Any additional information about the waste issue..." 
+								rows={3}
+								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" 
+							/>
+							<p className="text-xs text-gray-500 mt-1">
+								{notes.length}/200 characters
+							</p>
+						</div>
+						<div className="flex space-x-3">
+							<Button 
+								type="button" 
+								variant="primary" 
+								onClick={() => updateMutation.mutate({ 
+									description: description.trim(), 
+									notes: notes.trim() 
+								})}
+								disabled={updateMutation.isPending || !description.trim()}
+							>
+								{updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+							</Button>
+							<Button 
+								type="button" 
+								variant="ghost" 
+								onClick={() => {
+									setIsEditing(false)
+									// Reset to original values
+									if (report) {
+										setDescription(report.description || '')
+										setNotes(report.notes || '')
+									}
+									initializedRef.current = false
+								}}
+								disabled={updateMutation.isPending}
+							>
+								Cancel
+							</Button>
+						</div>
 					</div>
+				) : (
+					<div className="space-y-4">
+						<div>
+							<label className="block text-sm font-medium mb-1">Description</label>
+							<p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+								{report.description}
+							</p>
+						</div>
+						{report.notes && (
+							<div>
+								<label className="block text-sm font-medium mb-1">Notes</label>
+								<p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+									{report.notes}
+								</p>
+							</div>
+						)}
+					</div>
+				)}
+				
+				{/* Delete button - always visible */}
+				<div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+					<Button 
+						type="button" 
+						variant="ghost" 
+						onClick={() => deleteMutation.mutate()}
+						disabled={deleteMutation.isPending}
+						className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+					>
+						{deleteMutation.isPending ? 'Deleting...' : 'Delete Report'}
+					</Button>
 				</div>
 			</div>
 		</div>
