@@ -24,7 +24,7 @@ async function verifyImagesAreWaste(imageUrls) {
 	try {
 		const verificationPromise = (async () => {
 			const genAI = new GoogleGenerativeAI(apiKey)
-			const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' })
+			const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
 
 			// Fetch image bytes and run a concise classification prompt
 			const imageParts = []
@@ -38,13 +38,40 @@ async function verifyImagesAreWaste(imageUrls) {
 				imageParts.push({ inlineData: { data: Buffer.from(res.data).toString('base64'), mimeType: mime } })
 			}
 
-			const prompt = `You are classifying uploaded photos for a city waste reporting app.
-Return one JSON object only with fields: allowed (boolean) and reasons (array of short strings).
-allowed should be true only if the images clearly depict waste/trash/garbage/litter or dumping scenes.
-Disallow selfies, portraits, unrelated objects, animals, landscapes with no trash, paperwork screenshots, etc.
-Be strict if humans are the main subject.
-Examples of ALLOWED images: piles of garbage, litter on streets, waste bins overflowing, construction debris, electronic waste, etc.
-Examples of DISALLOWED images: selfies, portraits, people as main subject, clean landscapes, animals, documents, etc.`;
+			const prompt = `You are an AI classifier for a municipal waste management system. Analyze the uploaded images and determine if they show legitimate waste/garbage that requires collection.
+
+CLASSIFICATION RULES:
+✅ ALLOW these waste types:
+- Household garbage (bags, loose trash, food waste)
+- Recyclable materials (bottles, cans, paper, cardboard)
+- Electronic waste (old computers, phones, appliances)
+- Construction debris (wood, concrete, tiles, pipes)
+- Hazardous waste (batteries, chemicals, paint cans)
+- Organic waste (yard trimmings, compost materials)
+- Bulk items (furniture, mattresses, large appliances)
+- Litter and illegal dumping scenes
+- Overflowing waste bins or dumpsters
+
+❌ REJECT these non-waste images:
+- People as the main subject (selfies, portraits, group photos)
+- Clean environments with no visible waste
+- Animals or pets
+- Food items that are not clearly discarded waste
+- Documents, screenshots, or text-heavy images
+- Vehicles (unless clearly abandoned as waste)
+- Buildings or architecture (unless showing waste accumulation)
+- Nature scenes without waste
+- Personal belongings in use (not discarded)
+
+RESPONSE FORMAT:
+Return ONLY a JSON object with these exact fields:
+{
+  "allowed": boolean,
+  "reasons": ["specific reason 1", "specific reason 2"],
+  "confidence": number (0.0 to 1.0)
+}
+
+Be strict but fair. If unsure, err on the side of allowing legitimate waste reports.`;
 
 			const result = await model.generateContent([
 				{ text: prompt },
@@ -64,9 +91,13 @@ Examples of DISALLOWED images: selfies, portraits, people as main subject, clean
 			
 			if (typeof parsed?.allowed === 'boolean') {
 				console.log('AI Decision:', parsed)
-				return { allowed: parsed.allowed, reasons: Array.isArray(parsed.reasons) ? parsed.reasons : undefined }
+				return { 
+					allowed: parsed.allowed, 
+					reasons: Array.isArray(parsed.reasons) ? parsed.reasons : ['No specific reasons provided'],
+					confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5
+				}
 			}
-			return { allowed: false, reasons: ['AI response invalid'] }
+			return { allowed: false, reasons: ['AI response format invalid'], confidence: 0.0 }
 		})()
 
 		// Race between verification and timeout

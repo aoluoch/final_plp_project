@@ -1,5 +1,12 @@
 import { axiosInstance } from './axiosInstance'
-import { ApiResponse } from '../types'
+import { ApiResponse, Report, User } from '../types'
+
+export interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
 
 export interface DashboardStats {
   totalReports: number
@@ -43,17 +50,17 @@ export const adminApi = {
     type?: string
     priority?: string
     search?: string
-  }): Promise<{ reports: any[]; pagination: any }> {
+  }): Promise<{ reports: Report[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams()
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined) {
+        if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString())
         }
       })
     }
 
-    const response = await axiosInstance.get<ApiResponse<{ reports: any[]; pagination: any }>>(
+    const response = await axiosInstance.get<ApiResponse<{ reports: Report[]; pagination: PaginationInfo }>>(
       `/admin/reports?${params.toString()}`
     )
     return response.data.data
@@ -65,17 +72,17 @@ export const adminApi = {
     role?: string
     status?: string
     search?: string
-  }): Promise<{ users: any[]; pagination: any }> {
+  }): Promise<{ users: User[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams()
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined) {
+        if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString())
         }
       })
     }
 
-    const response = await axiosInstance.get<ApiResponse<{ users: any[]; pagination: any }>>(
+    const response = await axiosInstance.get<ApiResponse<{ users: User[]; pagination: PaginationInfo }>>(
       `/admin/users?${params.toString()}`
     )
     return response.data.data
@@ -121,7 +128,7 @@ export const adminApi = {
     
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
+        if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString())
         }
       })
@@ -162,28 +169,4 @@ export const adminApi = {
     return response.data.data
   },
 
-  async exportReports(format: 'csv' | 'excel', filters?: Record<string, unknown>): Promise<Blob> {
-    const params = new URLSearchParams()
-    params.append('format', format)
-    
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-          params.append(key, value.toString())
-        }
-      })
-    }
-
-    const response = await axiosInstance.get(`/admin/export/reports?${params.toString()}`, {
-      responseType: 'blob',
-    })
-    return response.data
-  },
-
-  async exportUsers(format: 'csv' | 'excel'): Promise<Blob> {
-    const response = await axiosInstance.get(`/admin/export/users?format=${format}`, {
-      responseType: 'blob',
-    })
-    return response.data
-  },
 }

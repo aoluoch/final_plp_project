@@ -159,8 +159,32 @@ const ReportForm: React.FC = () => {
       
       // Handle validation errors from the server
       if (error && typeof error === 'object' && 'errors' in error) {
-        const validationError = error as { message: string; errors?: Record<string, string[]> }
+        const validationError = error as { message: string; errors?: Record<string, string[]>; reasons?: string[] }
         console.error('Validation errors:', validationError.errors)
+        
+        // Check if this is an AI image rejection
+        if (validationError.message?.includes('do not appear to depict waste') || validationError.reasons) {
+          const reasons = validationError.reasons || ['Images do not appear to show waste materials']
+          showToast({ 
+            message: `❌ Image Verification Failed`, 
+            type: 'error',
+            title: 'Images Rejected'
+          })
+          
+          // Show detailed reasons in a separate toast or alert
+          const reasonsText = reasons.join('. ')
+          setTimeout(() => {
+            showToast({
+              message: `Please upload images that clearly show waste, garbage, or litter. Reasons: ${reasonsText}`,
+              type: 'warning',
+              title: 'Upload Guidelines'
+            })
+          }, 1000)
+          
+          // Clear the uploaded images so user can try again
+          setImages([])
+          return
+        }
         
         // Show the first validation error if errors exist
         let errorMessage = validationError.message || 'Validation failed'
@@ -347,8 +371,22 @@ const ReportForm: React.FC = () => {
           {/* Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Photos (Minimum 2)
+              Photos (Minimum 2) *
             </label>
+            
+            {/* Image Requirements Info */}
+            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">📸 Photo Requirements:</h4>
+              <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                <li>✅ Show clear images of waste, garbage, or litter</li>
+                <li>✅ Include overflowing bins, illegal dumping, or debris</li>
+                <li>✅ Capture the waste problem from multiple angles</li>
+                <li>❌ Avoid selfies, portraits, or people as main subjects</li>
+                <li>❌ Don't upload clean areas without visible waste</li>
+                <li>❌ No personal documents or unrelated objects</li>
+              </ul>
+            </div>
+            
             <input
               type="file"
               multiple
@@ -357,7 +395,7 @@ const ReportForm: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Upload at least 2 and up to 5 images (max 5MB each). Supported formats: JPEG, PNG, WebP, GIF, BMP, TIFF, SVG, ICO
+              Upload at least 2 and up to 5 images (max 5MB each). AI verification will check that images show waste materials.
             </p>
             {errors.images && (
               <p className="mt-1 text-sm text-red-600">{errors.images}</p>

@@ -32,8 +32,8 @@ const AdminUsers: React.FC = () => {
     status: '',
     search: ''
   })
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [showStatusModal, setShowStatusModal] = useState(false)
+  // const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  // const [showStatusModal, setShowStatusModal] = useState(false)
   const { showToast } = useToast()
 
   const fetchUsers = useCallback(async () => {

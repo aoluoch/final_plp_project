@@ -110,17 +110,26 @@ router.post('/', [
     const images = req.files.map(file => file.path);
 
     // AI verify images depict waste
+    console.log('Starting AI verification for', images.length, 'images...');
     const aiDecision = await verifyImagesAreWaste(images)
+    console.log('AI verification result:', aiDecision);
+    
     if (!aiDecision.allowed) {
       // Clean up uploaded images if rejected
       const publicIds = req.files.map(file => extractPublicId(file.path));
       await deleteImages(publicIds);
+      
+      const confidenceText = aiDecision.confidence ? ` (Confidence: ${(aiDecision.confidence * 100).toFixed(1)}%)` : '';
+      
       return res.status(400).json({
         success: false,
-        message: 'Uploaded photos do not appear to depict waste.',
-        reasons: aiDecision.reasons
+        message: `Uploaded photos do not appear to depict waste${confidenceText}`,
+        reasons: aiDecision.reasons || ['Images do not clearly show waste materials'],
+        confidence: aiDecision.confidence || 0.0
       });
     }
+    
+    console.log('AI verification passed. Creating report...');
 
     // Create new report
     const report = new WasteReport({

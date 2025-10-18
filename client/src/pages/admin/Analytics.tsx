@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { adminApi, ReportAnalytics, UserAnalytics } from '../../api/adminApi'
 import { useToast } from '../../context/ToastContext'
 import {
@@ -31,11 +31,7 @@ const AdminAnalytics: React.FC = () => {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
-  useEffect(() => {
-    fetchAnalytics()
-  }, [dateRange])
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true)
       const [reportData, userData] = await Promise.all([
@@ -50,7 +46,11 @@ const AdminAnalytics: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [dateRange, showToast])
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
 
   if (loading) {
     return (

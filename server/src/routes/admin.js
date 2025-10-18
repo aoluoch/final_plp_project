@@ -317,8 +317,8 @@ router.get('/reports', [
   authorize('admin'),
   query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-  query('status').optional().isIn(['pending', 'in_progress', 'completed', 'cancelled']).withMessage('Invalid status'),
-  query('type').optional().isIn(['organic', 'recyclable', 'hazardous', 'electronic', 'other']).withMessage('Invalid type'),
+  query('status').optional().isIn(['pending', 'assigned', 'in_progress', 'completed', 'cancelled']).withMessage('Invalid status'),
+  query('type').optional().isIn(['household', 'electronic', 'hazardous', 'organic', 'recyclable', 'construction', 'other']).withMessage('Invalid type'),
   query('priority').optional().isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority'),
   query('search').optional().custom((value) => {
     if (value && value.length > 0 && value.length > 100) {
@@ -460,7 +460,7 @@ router.get('/users', [
 // @access  Private (admin only)
 router.patch('/reports/:id/status', [
   authorize('admin'),
-  body('status').isIn(['pending', 'in_progress', 'completed', 'cancelled']).withMessage('Invalid status'),
+  body('status').isIn(['pending', 'assigned', 'in_progress', 'completed', 'cancelled']).withMessage('Invalid status'),
   body('notes').optional().isLength({ max: 500 }).withMessage('Notes must be less than 500 characters'),
   validate
 ], async (req, res) => {
