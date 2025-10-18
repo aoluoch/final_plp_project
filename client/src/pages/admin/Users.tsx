@@ -1,29 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { adminApi } from '../../api/adminApi'
+import { adminApi, AdminUser, PaginationInfo } from '../../api/adminApi'
 import { useToast } from '../../context/ToastContext'
 
-interface User {
-  _id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: string
-  isActive: boolean
-  phone?: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface Pagination {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-}
-
 const AdminUsers: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([])
-  const [pagination, setPagination] = useState<Pagination | null>(null)
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
     page: 1,
@@ -54,7 +35,7 @@ const AdminUsers: React.FC = () => {
     fetchUsers()
   }, [fetchUsers])
 
-  const handleStatusToggle = async (user: User) => {
+  const handleStatusToggle = async (user: AdminUser) => {
     try {
       await adminApi.updateUserStatus(user._id, !user.isActive)
       showToast({ message: `User ${!user.isActive ? 'activated' : 'deactivated'} successfully`, type: 'success' })

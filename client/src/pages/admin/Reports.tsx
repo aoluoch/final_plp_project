@@ -1,43 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { adminApi } from '../../api/adminApi'
+import { adminApi, AdminReport, PaginationInfo } from '../../api/adminApi'
 import { useToast } from '../../context/ToastContext'
 
-interface Report {
-  _id: string
-  type: string
-  description: string
-  status: string
-  priority: string
-  location: {
-    address: string
-    coordinates: [number, number]
-  }
-  userId: {
-    _id: string
-    firstName: string
-    lastName: string
-    email: string
-  }
-  assignedCollectorId?: {
-    _id: string
-    firstName: string
-    lastName: string
-  }
-  createdAt: string
-  updatedAt: string
-  adminNotes?: string
-}
-
-interface Pagination {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-}
-
 const AdminReports: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([])
-  const [pagination, setPagination] = useState<Pagination | null>(null)
+  const [reports, setReports] = useState<AdminReport[]>([])
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
     page: 1,
@@ -47,7 +14,7 @@ const AdminReports: React.FC = () => {
     priority: '',
     search: ''
   })
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
+  const [selectedReport, setSelectedReport] = useState<AdminReport | null>(null)
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [statusUpdate, setStatusUpdate] = useState({ status: '', notes: '' })
   const { showToast } = useToast()

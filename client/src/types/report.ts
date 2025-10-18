@@ -1,5 +1,6 @@
 export interface WasteReport {
   id: string
+  _id: string // For MongoDB compatibility
   userId: string
   type: WasteType
   description: string

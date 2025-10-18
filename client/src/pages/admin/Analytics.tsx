@@ -132,7 +132,7 @@ const AdminAnalytics: React.FC = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {reportAnalytics.reportsByStatus.map((entry, index) => (
+                      {reportAnalytics.reportsByStatus.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -225,7 +225,7 @@ const AdminAnalytics: React.FC = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {userAnalytics.usersByRole.map((entry, index) => (
+                      {userAnalytics.usersByRole.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

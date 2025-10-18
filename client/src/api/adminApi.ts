@@ -1,24 +1,67 @@
 import { axiosInstance } from './axiosInstance'
-import { ApiResponse, Report, User } from '../types'
+import { ApiResponse } from '../types'
 
 export interface PaginationInfo {
-  page: number
-  limit: number
-  total: number
+  currentPage: number
   totalPages: number
+  totalItems: number
+  itemsPerPage: number
+}
+
+export interface AdminReport {
+  _id: string
+  type: string
+  description: string
+  status: string
+  priority: string
+  location: {
+    address: string
+    coordinates: [number, number]
+  }
+  userId: {
+    _id: string
+    firstName: string
+    lastName: string
+    email: string
+  }
+  assignedCollectorId?: {
+    _id: string
+    firstName: string
+    lastName: string
+  }
+  createdAt: string
+  updatedAt: string
+  adminNotes?: string
+}
+
+export interface AdminUser {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  role: string
+  isActive: boolean
+  phone?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface DashboardStats {
   totalReports: number
   pendingReports: number
   completedReports: number
+  inProgressReports: number
   totalCollectors: number
   activeCollectors: number
   totalResidents: number
   activeResidents: number
   reportsThisMonth: number
   reportsLastMonth: number
+  reportsGrowth: number
   completionRate: number
+  totalPickups: number
+  completedPickups: number
+  pendingPickups: number
 }
 
 export interface ReportAnalytics {
@@ -50,7 +93,7 @@ export const adminApi = {
     type?: string
     priority?: string
     search?: string
-  }): Promise<{ reports: Report[]; pagination: PaginationInfo }> {
+  }): Promise<{ reports: AdminReport[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams()
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -60,7 +103,7 @@ export const adminApi = {
       })
     }
 
-    const response = await axiosInstance.get<ApiResponse<{ reports: Report[]; pagination: PaginationInfo }>>(
+    const response = await axiosInstance.get<ApiResponse<{ reports: AdminReport[]; pagination: PaginationInfo }>>(
       `/admin/reports?${params.toString()}`
     )
     return response.data.data
@@ -72,7 +115,7 @@ export const adminApi = {
     role?: string
     status?: string
     search?: string
-  }): Promise<{ users: User[]; pagination: PaginationInfo }> {
+  }): Promise<{ users: AdminUser[]; pagination: PaginationInfo }> {
     const params = new URLSearchParams()
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -82,7 +125,7 @@ export const adminApi = {
       })
     }
 
-    const response = await axiosInstance.get<ApiResponse<{ users: User[]; pagination: PaginationInfo }>>(
+    const response = await axiosInstance.get<ApiResponse<{ users: AdminUser[]; pagination: PaginationInfo }>>(
       `/admin/users?${params.toString()}`
     )
     return response.data.data

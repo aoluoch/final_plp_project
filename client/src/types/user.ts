@@ -1,6 +1,6 @@
 export interface User {
   id: string
-  _id?: string // For MongoDB compatibility
+  _id: string // For MongoDB compatibility
   email: string
   firstName: string
   lastName: string

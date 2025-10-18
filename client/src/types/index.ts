@@ -2,6 +2,9 @@ export * from './user'
 export * from './report'
 export * from './pickup'
 
+// Type aliases for compatibility
+export type { WasteReport as Report } from './report'
+
 export type Theme = 'light' | 'dark' | 'system'
 
 export interface Coordinates {
