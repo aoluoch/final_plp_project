@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { adminApi, DashboardStats } from '../../api/adminApi'
 import { useToast } from '../../context/ToastContext'
 
@@ -6,6 +7,7 @@ const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const { showToast } = useToast()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -183,17 +185,26 @@ const AdminDashboard: React.FC = () => {
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button 
+            onClick={() => navigate('/admin/reports')}
+            className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
             <div className="text-2xl mb-2">📋</div>
             <div className="font-medium text-gray-900 dark:text-white">View All Reports</div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Manage waste reports</div>
           </button>
-          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button 
+            onClick={() => navigate('/admin/users')}
+            className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
             <div className="text-2xl mb-2">👥</div>
             <div className="font-medium text-gray-900 dark:text-white">Manage Users</div>
             <div className="text-sm text-gray-500 dark:text-gray-400">View and manage users</div>
           </button>
-          <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button 
+            onClick={() => navigate('/admin/analytics')}
+            className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
             <div className="text-2xl mb-2">📈</div>
             <div className="font-medium text-gray-900 dark:text-white">View Analytics</div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Detailed analytics</div>
