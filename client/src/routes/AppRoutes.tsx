@@ -23,6 +23,8 @@ import AdminAnalytics from '../pages/admin/Analytics'
 // Collector Pages
 import CollectorDashboard from '../pages/collector/Dashboard'
 import TaskDetails from '../pages/collector/TaskDetails'
+import RouteOptimization from '../pages/collector/RouteOptimization'
+import CollectorPerformance from '../pages/collector/Performance'
 import CollectorChat from '../pages/collector/Chat'
 
 // Resident Pages
@@ -88,6 +90,8 @@ const AppRoutes: React.FC = () => {
       >
         <Route path="dashboard" element={<CollectorDashboard />} />
         <Route path="tasks/:id" element={<TaskDetails />} />
+        <Route path="route-optimization" element={<RouteOptimization />} />
+        <Route path="performance" element={<CollectorPerformance />} />
         <Route path="chat" element={<CollectorChat />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>

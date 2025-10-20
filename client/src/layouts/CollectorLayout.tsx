@@ -15,6 +15,8 @@ const CollectorLayout: React.FC = () => {
   const collectorNavItems = [
     { name: 'Dashboard', href: '/collector/dashboard', icon: '📊' },
     { name: 'My Tasks', href: '/collector/dashboard', icon: '📋' },
+    { name: 'Route Optimization', href: '/collector/route-optimization', icon: '🗺️' },
+    { name: 'Performance', href: '/collector/performance', icon: '📈' },
     { name: 'Chat', href: '/collector/chat', icon: '💬' },
   ]
 

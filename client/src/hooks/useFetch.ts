@@ -38,7 +38,7 @@ export function useFetch<T>(
     } finally {
       setLoading(false)
     }
-  }, [fetchFn, onSuccess, onError])
+  }, [fetchFn])
 
   const mutate = useCallback((newData: T) => {
     setData(newData)
@@ -86,7 +86,7 @@ export function useMutation<TData, TVariables>(
     } finally {
       setLoading(false)
     }
-  }, [mutationFn, options])
+  }, [mutationFn])
 
   const reset = useCallback(() => {
     setData(null)

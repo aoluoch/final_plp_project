@@ -8,6 +8,8 @@ export interface PickupTask {
   actualStartTime?: string
   actualEndTime?: string
   notes?: string
+  completionNotes?: string
+  images?: string[]
   createdAt: string
   updatedAt: string
   report: {
