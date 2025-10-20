@@ -168,7 +168,12 @@ export const pickupApi = {
       const responseData = response.data.data
 
       // Normalize backend task shape to frontend PickupTask shape
-      const normalizedTasks = (responseData.pickupTasks || []).map((t: Record<string, unknown>) => {
+      const rawTasks: unknown[] = Array.isArray(responseData.pickupTasks)
+        ? (responseData.pickupTasks as unknown[])
+        : []
+
+      const normalizedTasks = rawTasks.map((raw: unknown) => {
+        const t = (raw || {}) as Record<string, unknown>
         const id = (typeof t.id === 'string' ? t.id : undefined) || (typeof t._id === 'string' ? t._id : undefined)
 
         // Normalize report and reportId
@@ -199,26 +204,29 @@ export const pickupApi = {
         const report = reportFromT as Record<string, unknown>
 
         const normalized: PickupTask = {
-          id: id as string,
-          reportId: (reportId as string) || '',
-          collectorId: (collectorId as string) || '',
-          status: (t.status as PickupTask['status']) || 'scheduled',
-          scheduledDate: (t.scheduledDate as string) || '',
-          estimatedDuration: (t.estimatedDuration as number) || 0,
-          actualStartTime: t.actualStartTime as string | undefined,
-          actualEndTime: t.actualEndTime as string | undefined,
-          notes: t.notes as string | undefined,
-          completionNotes: t.completionNotes as string | undefined,
-          images: (t.images as string[] | undefined) || [],
-          createdAt: (t.createdAt as string) || '',
-          updatedAt: (t.updatedAt as string) || '',
+          id: id ?? '',
+          reportId: reportId ?? '',
+          collectorId: collectorId ?? '',
+          status: (typeof t.status === 'string' ? (t.status as PickupTask['status']) : 'scheduled'),
+          scheduledDate: (typeof t.scheduledDate === 'string' ? (t.scheduledDate as string) : ''),
+          estimatedDuration: (typeof t.estimatedDuration === 'number' ? t.estimatedDuration : 0),
+          actualStartTime: typeof t.actualStartTime === 'string' ? (t.actualStartTime as string) : undefined,
+          actualEndTime: typeof t.actualEndTime === 'string' ? (t.actualEndTime as string) : undefined,
+          notes: typeof t.notes === 'string' ? (t.notes as string) : undefined,
+          completionNotes: typeof t.completionNotes === 'string' ? (t.completionNotes as string) : undefined,
+          images: Array.isArray(t.images) ? (t.images as string[]) : [],
+          createdAt: typeof t.createdAt === 'string' ? (t.createdAt as string) : '',
+          updatedAt: typeof t.updatedAt === 'string' ? (t.updatedAt as string) : '',
           report: {
-            id: (typeof report.id === 'string' ? report.id : undefined) || (typeof report._id === 'string' ? (report._id as string) : undefined),
-            type: (report.type as string) || undefined,
-            description: (report.description as string) || undefined,
-            location: (report.location as unknown) as PickupTask['report']['location'],
-            priority: (report.priority as string) || undefined,
-            estimatedVolume: (report.estimatedVolume as number) || undefined,
+            id: (typeof report.id === 'string' ? (report.id as string) : (typeof report._id === 'string' ? (report._id as string) : '')),
+            type: typeof report.type === 'string' ? (report.type as string) : '',
+            description: typeof report.description === 'string' ? (report.description as string) : '',
+            location: (report.location as unknown as PickupTask['report']['location']) || {
+              address: '',
+              coordinates: { lat: 0, lng: 0 },
+            },
+            priority: typeof report.priority === 'string' ? (report.priority as string) : 'medium',
+            estimatedVolume: typeof report.estimatedVolume === 'number' ? (report.estimatedVolume as number) : 0,
           },
         }
 
