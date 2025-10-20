@@ -383,75 +383,87 @@ const CollectorDashboard: React.FC = () => {
       )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <span className="text-2xl">📋</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tasks</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <span className="text-2xl">📅</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Scheduled</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.scheduled}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg shrink-0">
+                <span className="text-2xl">📋</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tasks</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white whitespace-nowrap">{stats.total}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-              <span className="text-2xl">🚛</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Progress</p>
-              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.inProgress}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-              <span className="text-2xl">✅</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg shrink-0">
+                <span className="text-2xl">📅</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Scheduled</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">{stats.scheduled}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-              <span className="text-2xl">❌</span>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Cancelled</p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.cancelled}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg shrink-0">
+                <span className="text-2xl">🚛</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Progress</p>
+                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 whitespace-nowrap">{stats.inProgress}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-              <span className="text-2xl">📊</span>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg shrink-0">
+                <span className="text-2xl">✅</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400 whitespace-nowrap">{stats.completed}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completion Rate</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.completionRate}%</p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg shrink-0">
+                <span className="text-2xl">❌</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Cancelled</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400 whitespace-nowrap">{stats.cancelled}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 lg:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg shrink-0">
+                <span className="text-2xl">📊</span>
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completion Rate</p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 whitespace-nowrap">{stats.completionRate}%</p>
+              </div>
             </div>
           </div>
         </div>
