@@ -7,6 +7,22 @@ import { useSocket } from '../../hooks/useSocket'
 import { useToast } from '../../context/ToastContext'
 import { PickupStatus } from '../../types'
 
+// Socket event types
+interface TaskAssignmentData {
+  collectorId: string
+  report?: { type: string }
+  pickupTask?: { report?: { type: string } }
+}
+
+interface TaskUpdateData {
+  status?: string
+  message?: string
+}
+
+interface SystemNotificationData {
+  message: string
+}
+
 const CollectorDashboard: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -64,7 +80,7 @@ const CollectorDashboard: React.FC = () => {
   useEffect(() => {
     if (socket && user && isConnected) {
       // Listen for new task assignments
-      const handleNewTask = (data: any) => {
+      const handleNewTask = (data: TaskAssignmentData) => {
         if (data.collectorId === user.id || data.collectorId === user._id) {
           const taskType = data.report?.type || data.pickupTask?.report?.type || 'Task'
           setNotifications(prev => [...prev, `New task assigned: ${taskType}`])
@@ -75,7 +91,7 @@ const CollectorDashboard: React.FC = () => {
       }
 
       // Listen for task updates
-      const handleTaskUpdate = (data: any) => {
+      const handleTaskUpdate = (data: TaskUpdateData) => {
         refetchTasks()
         refetchStats()
         if (data.status) {
@@ -84,13 +100,13 @@ const CollectorDashboard: React.FC = () => {
       }
 
       // Listen for emergency alerts
-      const handleEmergencyAlert = (data: any) => {
+      const handleEmergencyAlert = (data: SystemNotificationData) => {
         showToast({ type: 'error', title: 'Emergency Alert', message: data.message })
         setNotifications(prev => [...prev, `Emergency: ${data.message}`])
       }
 
       // Listen for system notifications
-      const handleSystemNotification = (data: any) => {
+      const handleSystemNotification = (data: SystemNotificationData) => {
         showToast({ type: 'info', title: 'System Update', message: data.message })
         setNotifications(prev => [...prev, data.message])
       }
@@ -125,15 +141,14 @@ const CollectorDashboard: React.FC = () => {
   })
 
   // Use API stats if available, otherwise calculate from tasks
-  const apiStats = statsData || {}
   const stats = {
-    total: apiStats.total || tasks.length,
-    scheduled: apiStats.scheduled || tasks.filter(task => task.status === 'scheduled').length,
-    inProgress: apiStats.inProgress || tasks.filter(task => task.status === 'in_progress').length,
-    completed: apiStats.completed || tasks.filter(task => task.status === 'completed').length,
-    cancelled: apiStats.cancelled || tasks.filter(task => task.status === 'cancelled').length,
-    today: apiStats.today?.total || todayTasks.length,
-    completionRate: apiStats.completionRate || 0,
+    total: statsData?.total || tasks.length,
+    scheduled: statsData?.scheduled || tasks.filter(task => task.status === 'scheduled').length,
+    inProgress: statsData?.inProgress || tasks.filter(task => task.status === 'in_progress').length,
+    completed: statsData?.completed || tasks.filter(task => task.status === 'completed').length,
+    cancelled: statsData?.cancelled || tasks.filter(task => task.status === 'cancelled').length,
+    today: statsData?.today?.total || todayTasks.length,
+    completionRate: statsData?.completionRate || 0,
   }
 
   // Handle refresh with loading state

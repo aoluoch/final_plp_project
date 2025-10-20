@@ -38,6 +38,7 @@ export function useFetch<T>(
     } finally {
       setLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchFn])
 
   const mutate = useCallback((newData: T) => {
@@ -86,6 +87,7 @@ export function useMutation<TData, TVariables>(
     } finally {
       setLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mutationFn])
 
   const reset = useCallback(() => {

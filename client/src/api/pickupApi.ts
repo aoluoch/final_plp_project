@@ -8,6 +8,67 @@ import {
   PaginatedResponse 
 } from '../types'
 
+// API response types
+interface TasksResponse {
+  pickupTasks: PickupTask[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+interface CollectorStats {
+  total: number
+  completed: number
+  inProgress: number
+  scheduled: number
+  cancelled: number
+  completionRate: number
+  today: {
+    total: number
+    completed: number
+    inProgress: number
+    scheduled: number
+    totalDuration: number
+    highPriority: number
+  }
+  thisWeek: {
+    total: number
+    completed: number
+    completionRate: number
+  }
+}
+
+interface PerformanceMetrics {
+  totalTasks: number
+  completedTasks: number
+  completionRate: number
+  averageCompletionTime: number
+  tasksByPriority: {
+    high: number
+    medium: number
+    low: number
+  }
+  tasksByStatus: {
+    pending: number
+    in_progress: number
+    completed: number
+    cancelled: number
+  }
+  weeklyData: Array<{
+    week: string
+    tasksCompleted: number
+    averageTime: number
+  }>
+  efficiency: {
+    onTimeCompletions: number
+    totalCompletions: number
+    onTimeRate: number
+  }
+}
+
 export const pickupApi = {
   async getTasks(filters?: PickupFilters, page = 1, limit = 10): Promise<PaginatedResponse<PickupTask>> {
     const params = new URLSearchParams()
@@ -26,7 +87,7 @@ export const pickupApi = {
     params.append('page', page.toString())
     params.append('limit', limit.toString())
 
-    const response = await axiosInstance.get<ApiResponse<any>>(
+    const response = await axiosInstance.get<ApiResponse<TasksResponse>>(
       `/pickups/tasks?${params.toString()}`
     )
     
@@ -66,6 +127,14 @@ export const pickupApi = {
     return response.data.data
   },
 
+  async updateTaskLocation(id: string, location: { latitude: number; longitude: number }): Promise<PickupTask> {
+    const response = await axiosInstance.post<ApiResponse<PickupTask>>(
+      `/pickups/tasks/${id}/update-location`,
+      location
+    )
+    return response.data.data
+  },
+
   async completeTask(id: string, notes?: string): Promise<PickupTask> {
     const response = await axiosInstance.post<ApiResponse<PickupTask>>(
       `/pickups/tasks/${id}/complete`,
@@ -91,7 +160,7 @@ export const pickupApi = {
 
   async getMyTasks(page = 1, limit = 10): Promise<PaginatedResponse<PickupTask>> {
     try {
-      const response = await axiosInstance.get<ApiResponse<any>>(
+      const response = await axiosInstance.get<ApiResponse<TasksResponse>>(
         `/pickups/my-tasks?page=${page}&limit=${limit}`
       )
       
@@ -107,8 +176,10 @@ export const pickupApi = {
           totalPages: 0
         }
       }
-    } catch (error: any) {
-      console.error('Error fetching my tasks:', error.response?.data || error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorResponse = (error as { response?: { data?: unknown } })?.response?.data
+      console.error('Error fetching my tasks:', errorResponse || errorMessage)
       // Return empty result instead of throwing to prevent crashes
       return {
         data: [],
@@ -130,14 +201,16 @@ export const pickupApi = {
     return response.data.data
   },
 
-  async getCollectorStats(): Promise<any> {
+  async getCollectorStats(): Promise<CollectorStats> {
     try {
       // Add cache-busting parameter to avoid cached 429 responses
       const cacheBuster = Date.now()
-      const response = await axiosInstance.get<ApiResponse<any>>(`/pickups/collector/stats?_=${cacheBuster}`)
+      const response = await axiosInstance.get<ApiResponse<CollectorStats>>(`/pickups/collector/stats?_=${cacheBuster}`)
       return response.data.data
-    } catch (error: any) {
-      console.error('Error fetching collector stats:', error.response?.data || error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorResponse = (error as { response?: { data?: unknown } })?.response?.data
+      console.error('Error fetching collector stats:', errorResponse || errorMessage)
       // Return default stats instead of throwing to prevent crashes
       return {
         total: 0,
@@ -163,8 +236,8 @@ export const pickupApi = {
     }
   },
 
-  async getCollectorPerformance(period: 'week' | 'month' | 'year' = 'month'): Promise<any> {
-    const response = await axiosInstance.get<ApiResponse<any>>(`/pickups/collector/performance?period=${period}`)
+  async getCollectorPerformance(period: 'week' | 'month' | 'year' = 'month'): Promise<PerformanceMetrics> {
+    const response = await axiosInstance.get<ApiResponse<PerformanceMetrics>>(`/pickups/collector/performance?period=${period}`)
     return response.data.data
   },
 }
