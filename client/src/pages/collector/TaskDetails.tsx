@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { pickupApi } from '../../api/pickupApi'
 import { useFetch, useMutation } from '../../hooks/useFetch'
 import { useToast } from '../../context/ToastContext'
 import { PickupStatus } from '../../types'
+import MapView from '../../components/MapView'
 
 const TaskDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -125,6 +126,15 @@ const TaskDetails: React.FC = () => {
   const handleGoBack = () => {
     navigate('/collector/dashboard')
   }
+
+  const taskLatLng = useMemo(() => {
+    const lat = task?.report?.location?.coordinates?.lat
+    const lng = task?.report?.location?.coordinates?.lng
+    if (typeof lat === 'number' && typeof lng === 'number') {
+      return { lat, lng }
+    }
+    return null
+  }, [task])
 
   if (loading) {
     return (
@@ -307,17 +317,29 @@ const TaskDetails: React.FC = () => {
                   {task.report?.location?.coordinates?.lat?.toFixed(6) || 'N/A'}, {task.report?.location?.coordinates?.lng?.toFixed(6) || 'N/A'}
                 </p>
               </div>
-              {task.report?.location?.coordinates && (
-                <button 
-                  onClick={() => {
-                    const { lat, lng } = task.report.location.coordinates
-                    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-                    window.open(url, '_blank')
-                  }}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  📍 Open in Maps
-                </button>
+              {taskLatLng ? (
+                <div>
+                  <MapView
+                    center={taskLatLng}
+                    zoom={14}
+                    interactive={false}
+                    height="320px"
+                    markers={[{
+                      id: task.id,
+                      position: taskLatLng,
+                      title: task.report?.type || 'Pickup Location',
+                      description: task.report?.location?.address,
+                      color: '#EF4444'
+                    }]}
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Map provided by Mapbox
+                  </p>
+                </div>
+              ) : (
+                <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-500 dark:text-gray-400">
+                  Location not available
+                </div>
               )}
             </div>
           </div>

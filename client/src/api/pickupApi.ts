@@ -104,8 +104,64 @@ export const pickupApi = {
   },
 
   async getTask(id: string): Promise<PickupTask> {
-    const response = await axiosInstance.get<ApiResponse<PickupTask>>(`/pickups/tasks/${id}`)
-    return response.data.data
+    const response = await axiosInstance.get<ApiResponse<unknown>>(`/pickups/tasks/${id}`)
+    const raw = (response.data.data || {}) as Record<string, unknown>
+
+    const taskId = (typeof raw.id === 'string' ? raw.id : undefined) || (typeof raw._id === 'string' ? (raw._id as string) : '')
+
+    const reportFromT = (raw.report as Record<string, unknown> | undefined) || (raw.reportId as Record<string, unknown> | undefined) || {}
+    const reportIdRaw = raw.reportId
+    let reportId: string | undefined
+    if (typeof reportIdRaw === 'string') {
+      reportId = reportIdRaw
+    } else if (reportIdRaw && typeof reportIdRaw === 'object' && '_id' in reportIdRaw) {
+      const maybe = reportIdRaw as { _id?: unknown }
+      reportId = typeof maybe._id === 'string' ? maybe._id : undefined
+    } else if (reportFromT && typeof reportFromT === 'object' && 'id' in reportFromT) {
+      reportId = typeof (reportFromT as { id?: unknown }).id === 'string' ? (reportFromT as { id?: string }).id : undefined
+    } else if (reportFromT && typeof reportFromT === 'object' && '_id' in reportFromT) {
+      reportId = typeof (reportFromT as { _id?: unknown })._id === 'string' ? (reportFromT as { _id?: string })._id : undefined
+    }
+
+    const collectorIdRaw = raw.collectorId
+    let collectorId: string | undefined
+    if (typeof collectorIdRaw === 'string') {
+      collectorId = collectorIdRaw
+    } else if (collectorIdRaw && typeof collectorIdRaw === 'object' && '_id' in collectorIdRaw) {
+      const maybe = collectorIdRaw as { _id?: unknown }
+      collectorId = typeof maybe._id === 'string' ? maybe._id : undefined
+    }
+
+    const report = reportFromT as Record<string, unknown>
+
+    const normalized: PickupTask = {
+      id: taskId || '',
+      reportId: reportId || '',
+      collectorId: collectorId || '',
+      status: (typeof raw.status === 'string' ? (raw.status as PickupTask['status']) : 'scheduled'),
+      scheduledDate: (typeof raw.scheduledDate === 'string' ? (raw.scheduledDate as string) : ''),
+      estimatedDuration: (typeof raw.estimatedDuration === 'number' ? (raw.estimatedDuration as number) : 0),
+      actualStartTime: typeof raw.actualStartTime === 'string' ? (raw.actualStartTime as string) : undefined,
+      actualEndTime: typeof raw.actualEndTime === 'string' ? (raw.actualEndTime as string) : undefined,
+      notes: typeof raw.notes === 'string' ? (raw.notes as string) : undefined,
+      completionNotes: typeof raw.completionNotes === 'string' ? (raw.completionNotes as string) : undefined,
+      images: Array.isArray(raw.images) ? (raw.images as string[]) : [],
+      createdAt: typeof raw.createdAt === 'string' ? (raw.createdAt as string) : '',
+      updatedAt: typeof raw.updatedAt === 'string' ? (raw.updatedAt as string) : '',
+      report: {
+        id: (typeof report.id === 'string' ? (report.id as string) : (typeof report._id === 'string' ? (report._id as string) : '')),
+        type: typeof report.type === 'string' ? (report.type as string) : '',
+        description: typeof report.description === 'string' ? (report.description as string) : '',
+        location: (report.location as unknown as PickupTask['report']['location']) || {
+          address: '',
+          coordinates: { lat: 0, lng: 0 },
+        },
+        priority: typeof report.priority === 'string' ? (report.priority as string) : 'medium',
+        estimatedVolume: typeof report.estimatedVolume === 'number' ? (report.estimatedVolume as number) : 0,
+      },
+    }
+
+    return normalized
   },
 
   async createTask(data: CreatePickupData): Promise<PickupTask> {
