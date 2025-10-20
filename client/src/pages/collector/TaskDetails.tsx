@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { pickupApi } from '../../api/pickupApi'
 import { useFetch, useMutation } from '../../hooks/useFetch'
@@ -12,9 +12,10 @@ const TaskDetails: React.FC = () => {
   const [completionNotes, setCompletionNotes] = useState('')
   const [showNotesModal, setShowNotesModal] = useState(false)
 
-  // Fetch task details
+  // Fetch task details (memoized to avoid re-renders causing refetch loops)
+  const fetchTask = useCallback(() => pickupApi.getTask(id!), [id])
   const { data: task, loading, error, refetch } = useFetch(
-    () => pickupApi.getTask(id!),
+    fetchTask,
     { immediate: !!id }
   )
 

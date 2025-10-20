@@ -166,9 +166,37 @@ export const pickupApi = {
       
       // Handle the backend response structure
       const responseData = response.data.data
-      
+
+      // Normalize backend task shape to frontend PickupTask shape
+      const normalizedTasks = (responseData.pickupTasks || []).map((t: any) => {
+        const report = t.report || t.reportId || {}
+        return {
+          id: t.id || t._id,
+          reportId: (t.reportId && t.reportId._id) || t.reportId || report._id,
+          collectorId: (t.collectorId && t.collectorId._id) || t.collectorId,
+          status: t.status,
+          scheduledDate: t.scheduledDate,
+          estimatedDuration: t.estimatedDuration,
+          actualStartTime: t.actualStartTime,
+          actualEndTime: t.actualEndTime,
+          notes: t.notes,
+          completionNotes: t.completionNotes,
+          images: t.images,
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          report: {
+            id: report.id || report._id,
+            type: report.type,
+            description: report.description,
+            location: report.location,
+            priority: report.priority,
+            estimatedVolume: report.estimatedVolume,
+          },
+        } as PickupTask
+      })
+
       return {
-        data: responseData.pickupTasks || [],
+        data: normalizedTasks,
         pagination: responseData.pagination || {
           page: page,
           limit: limit,

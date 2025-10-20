@@ -107,6 +107,8 @@ router.post('/', [
     const io = req.app.get('io');
     if (io) {
       io.emit('assign_task', {
+        // Explicitly include collectorId so frontend can match and refetch
+        collectorId: collectorId,
         pickupTask,
         report,
         collector
@@ -208,51 +210,7 @@ router.get('/', [
   }
 });
 
-// @route   GET /api/pickups/:id
-// @desc    Get single pickup task by ID
-// @access  Private
-router.get('/:id', [
-  validate
-], async (req, res) => {
-  try {
-    const pickupTask = await PickupTask.findById(req.params.id)
-      .populate('reportId')
-      .populate('collectorId', 'firstName lastName email phone');
-
-    if (!pickupTask) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pickup task not found'
-      });
-    }
-
-    // Check access permissions
-    if (req.user.role === 'collector' && pickupTask.collectorId._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied'
-      });
-    }
-
-    if (req.user.role === 'resident' && pickupTask.reportId.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: { pickupTask }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
+// (moved below '/my-tasks' to avoid shadowing)
 
 // @route   PATCH /api/pickups/:id/start
 // @desc    Start pickup task (collector only)
@@ -630,6 +588,52 @@ router.get('/my-tasks', [
       code: error.code,
       user: req.user ? { id: req.user._id, role: req.user.role } : 'No user'
     });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/pickups/:id
+// @desc    Get single pickup task by ID
+// @access  Private
+router.get('/:id', [
+  validate
+], async (req, res) => {
+  try {
+    const pickupTask = await PickupTask.findById(req.params.id)
+      .populate('reportId')
+      .populate('collectorId', 'firstName lastName email phone');
+
+    if (!pickupTask) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pickup task not found'
+      });
+    }
+
+    // Check access permissions
+    if (req.user.role === 'collector' && pickupTask.collectorId._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    if (req.user.role === 'resident' && pickupTask.reportId.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { pickupTask }
+    });
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Server error',
