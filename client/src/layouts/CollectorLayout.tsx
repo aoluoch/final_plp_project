@@ -18,6 +18,7 @@ const CollectorLayout: React.FC = () => {
     { name: 'Route Optimization', href: '/collector/route-optimization', icon: '🗺️' },
     { name: 'Performance', href: '/collector/performance', icon: '📈' },
     { name: 'Chat', href: '/collector/chat', icon: '💬' },
+    { name: 'Area Chat', href: '/collector/area-chat', icon: '📍' },
   ]
 
   return (

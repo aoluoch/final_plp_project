@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useSocket } from '../../hooks/useSocket'
+import { messagesApi } from '../../api/messagesApi'
 
 interface Message {
   id: string
@@ -42,11 +43,25 @@ const CollectorChat: React.FC = () => {
     scrollToBottom()
   }, [messages])
 
-  // Setup socket listeners
+  // Resolve the room name for collectors
+  const collectorRoom = 'role:collector'
+
+  // Load history and setup socket listeners
   useEffect(() => {
     if (socket) {
-      // Join collector room
-      socket.emit('join_room', { room: 'collectors', userId: user?.id })
+      // Join collector role room used by backend
+      socket.emit('join_room', collectorRoom)
+
+      // Load recent history
+      messagesApi.getRoomMessages(collectorRoom, 1, 50)
+        .then((history) => {
+          setMessages((prev) => {
+            // Keep existing welcome message if present, then history
+            const existingSystem = prev.filter(m => m.type === 'system')
+            return [...existingSystem, ...history]
+          })
+        })
+        .catch((err) => console.error(err))
 
       // Listen for messages
       const handleNewMessage = (...args: unknown[]) => {
@@ -112,8 +127,9 @@ const CollectorChat: React.FC = () => {
 
     // Emit message to server
     socket.emit('send_message', {
-      room: 'collectors',
-      message
+      room: collectorRoom,
+      message: message.message,
+      type: message.type,
     })
 
     // Add message to local state immediately

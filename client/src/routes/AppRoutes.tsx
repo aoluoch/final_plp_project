@@ -27,6 +27,8 @@ import TaskDetails from '../pages/collector/TaskDetails'
 import RouteOptimization from '../pages/collector/RouteOptimization'
 import CollectorPerformance from '../pages/collector/Performance'
 import CollectorChat from '../pages/collector/Chat'
+import DirectChat from '../pages/collector/DirectChat'
+import AreaChat from '../pages/collector/AreaChat'
 
 // Resident Pages
 import ResidentDashboard from '../pages/resident/Dashboard'
@@ -95,6 +97,8 @@ const AppRoutes: React.FC = () => {
         <Route path="route-optimization" element={<RouteOptimization />} />
         <Route path="performance" element={<CollectorPerformance />} />
         <Route path="chat" element={<CollectorChat />} />
+        <Route path="chat/:userId" element={<DirectChat />} />
+        <Route path="area-chat" element={<AreaChat />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 

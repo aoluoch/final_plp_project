@@ -56,10 +56,52 @@ const setupSocketHandlers = (io) => {
     }
     
 
-    // Handle joining specific rooms
+    // Handle joining specific rooms with basic authorization
     socket.on('join_room', (roomName) => {
-      socket.join(roomName);
-      console.log(`User ${socket.user.firstName} joined room: ${roomName}`);
+      try {
+        if (typeof roomName !== 'string' || !roomName) return;
+
+        // Allow joining own user room
+        if (roomName === `user:${socket.user._id}`) {
+          socket.join(roomName);
+          console.log(`User ${socket.user.firstName} joined room: ${roomName}`);
+          return;
+        }
+
+        // Allow joining role room for the user's role
+        if (roomName === `role:${socket.user.role}`) {
+          socket.join(roomName);
+          console.log(`User ${socket.user.firstName} joined room: ${roomName}`);
+          return;
+        }
+
+        // Allow joining area rooms (server already joins on connect if available)
+        if (roomName.startsWith('area:')) {
+          socket.join(roomName);
+          console.log(`User ${socket.user.firstName} joined room: ${roomName}`);
+          return;
+        }
+
+        // Direct message room: dm:<idA>:<idB> (sorted lexicographically)
+        if (roomName.startsWith('dm:')) {
+          const parts = roomName.split(':');
+          if (parts.length === 3) {
+            const [_, a, b] = parts;
+            const sorted = [a, b].sort().join(':');
+            const expected = `dm:${sorted}`;
+            const selfId = socket.user._id.toString();
+            if (roomName === expected && (a === selfId || b === selfId)) {
+              socket.join(roomName);
+              console.log(`User ${socket.user.firstName} joined room: ${roomName}`);
+              return;
+            }
+          }
+        }
+
+        socket.emit('error', { message: 'Not authorized to join this room' });
+      } catch (e) {
+        socket.emit('error', { message: 'Failed to join room' });
+      }
     });
 
     // Handle leaving rooms
@@ -79,16 +121,25 @@ const setupSocketHandlers = (io) => {
           return;
         }
 
+        // Persist message
+        const Message = require('../models/Message');
+        const saved = await Message.create({
+          room,
+          sender: socket.user._id,
+          message: typeof message === 'string' ? message : (message?.message || ''),
+          type,
+        });
+
         const messageData = {
-          id: Date.now().toString(),
+          id: saved._id.toString(),
           sender: {
             id: socket.user._id,
             name: `${socket.user.firstName} ${socket.user.lastName}`,
             role: socket.user.role
           },
-          message,
-          type,
-          timestamp: new Date().toISOString(),
+          message: saved.message,
+          type: saved.type,
+          timestamp: saved.createdAt.toISOString(),
           room
         };
 
