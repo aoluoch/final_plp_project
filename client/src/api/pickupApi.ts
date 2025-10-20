@@ -168,31 +168,61 @@ export const pickupApi = {
       const responseData = response.data.data
 
       // Normalize backend task shape to frontend PickupTask shape
-      const normalizedTasks = (responseData.pickupTasks || []).map((t: any) => {
-        const report = t.report || t.reportId || {}
-        return {
-          id: t.id || t._id,
-          reportId: (t.reportId && t.reportId._id) || t.reportId || report._id,
-          collectorId: (t.collectorId && t.collectorId._id) || t.collectorId,
-          status: t.status,
-          scheduledDate: t.scheduledDate,
-          estimatedDuration: t.estimatedDuration,
-          actualStartTime: t.actualStartTime,
-          actualEndTime: t.actualEndTime,
-          notes: t.notes,
-          completionNotes: t.completionNotes,
-          images: t.images,
-          createdAt: t.createdAt,
-          updatedAt: t.updatedAt,
+      const normalizedTasks = (responseData.pickupTasks || []).map((t: Record<string, unknown>) => {
+        const id = (typeof t.id === 'string' ? t.id : undefined) || (typeof t._id === 'string' ? t._id : undefined)
+
+        // Normalize report and reportId
+        const reportFromT = (t.report as Record<string, unknown> | undefined) || (t.reportId as Record<string, unknown> | undefined) || {}
+        const reportIdRaw = t.reportId
+        let reportId: string | undefined
+        if (typeof reportIdRaw === 'string') {
+          reportId = reportIdRaw
+        } else if (reportIdRaw && typeof reportIdRaw === 'object' && '_id' in reportIdRaw) {
+          const maybe = reportIdRaw as { _id?: unknown }
+          reportId = typeof maybe._id === 'string' ? maybe._id : undefined
+        } else if (reportFromT && typeof reportFromT === 'object' && 'id' in reportFromT) {
+          reportId = typeof (reportFromT as { id?: unknown }).id === 'string' ? (reportFromT as { id?: string }).id : undefined
+        } else if (reportFromT && typeof reportFromT === 'object' && '_id' in reportFromT) {
+          reportId = typeof (reportFromT as { _id?: unknown })._id === 'string' ? (reportFromT as { _id?: string })._id : undefined
+        }
+
+        // Normalize collectorId
+        const collectorIdRaw = t.collectorId
+        let collectorId: string | undefined
+        if (typeof collectorIdRaw === 'string') {
+          collectorId = collectorIdRaw
+        } else if (collectorIdRaw && typeof collectorIdRaw === 'object' && '_id' in collectorIdRaw) {
+          const maybe = collectorIdRaw as { _id?: unknown }
+          collectorId = typeof maybe._id === 'string' ? maybe._id : undefined
+        }
+
+        const report = reportFromT as Record<string, unknown>
+
+        const normalized: PickupTask = {
+          id: id as string,
+          reportId: (reportId as string) || '',
+          collectorId: (collectorId as string) || '',
+          status: (t.status as PickupTask['status']) || 'scheduled',
+          scheduledDate: (t.scheduledDate as string) || '',
+          estimatedDuration: (t.estimatedDuration as number) || 0,
+          actualStartTime: t.actualStartTime as string | undefined,
+          actualEndTime: t.actualEndTime as string | undefined,
+          notes: t.notes as string | undefined,
+          completionNotes: t.completionNotes as string | undefined,
+          images: (t.images as string[] | undefined) || [],
+          createdAt: (t.createdAt as string) || '',
+          updatedAt: (t.updatedAt as string) || '',
           report: {
-            id: report.id || report._id,
-            type: report.type,
-            description: report.description,
-            location: report.location,
-            priority: report.priority,
-            estimatedVolume: report.estimatedVolume,
+            id: (typeof report.id === 'string' ? report.id : undefined) || (typeof report._id === 'string' ? (report._id as string) : undefined),
+            type: (report.type as string) || undefined,
+            description: (report.description as string) || undefined,
+            location: (report.location as unknown) as PickupTask['report']['location'],
+            priority: (report.priority as string) || undefined,
+            estimatedVolume: (report.estimatedVolume as number) || undefined,
           },
-        } as PickupTask
+        }
+
+        return normalized
       })
 
       return {
