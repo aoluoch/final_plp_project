@@ -672,4 +672,402 @@ router.get('/export/users', [
   }
 });
 
+// @route   POST /api/admin/assign-collector
+// @desc    Assign a collector to a waste report
+// @access  Private (admin only)
+router.post('/assign-collector', [
+  authorize('admin'),
+  body('reportId')
+    .isMongoId()
+    .withMessage('Invalid report ID'),
+  body('collectorId')
+    .isMongoId()
+    .withMessage('Invalid collector ID'),
+  body('scheduledDate')
+    .isISO8601()
+    .withMessage('Invalid date format'),
+  body('estimatedDuration')
+    .isInt({ min: 5 })
+    .withMessage('Duration must be at least 5 minutes'),
+  body('notes')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Notes cannot exceed 200 characters'),
+  validate
+], async (req, res) => {
+  try {
+    const { reportId, collectorId, scheduledDate, estimatedDuration, notes } = req.body;
+
+    // Check if report exists and is not already assigned
+    const report = await WasteReport.findById(reportId);
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    if (report.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot assign collector to completed report'
+      });
+    }
+
+    // Check if collector exists and is active
+    const collector = await User.findOne({ _id: collectorId, role: 'collector', isActive: true });
+    if (!collector) {
+      return res.status(404).json({
+        success: false,
+        message: 'Collector not found or inactive'
+      });
+    }
+
+    // Check if report is already assigned to another collector
+    if (report.assignedCollectorId && report.assignedCollectorId.toString() !== collectorId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Report is already assigned to another collector'
+      });
+    }
+
+    // Create pickup task
+    const pickupTask = new PickupTask({
+      reportId,
+      collectorId,
+      scheduledDate: new Date(scheduledDate),
+      estimatedDuration,
+      notes
+    });
+
+    await pickupTask.save();
+
+    // Update report status and assign collector
+    report.status = 'assigned';
+    report.assignedCollectorId = collectorId;
+    report.scheduledPickupDate = new Date(scheduledDate);
+    await report.save();
+
+    // Create notifications
+    const notifications = [
+      {
+        userId: collectorId,
+        type: 'pickup_scheduled',
+        title: 'New Pickup Task Assigned',
+        message: `You have been assigned a new pickup task scheduled for ${new Date(scheduledDate).toLocaleDateString()}`,
+        data: { pickupTaskId: pickupTask._id, reportId },
+        priority: 'high'
+      },
+      {
+        userId: report.userId,
+        type: 'pickup_scheduled',
+        title: 'Pickup Scheduled',
+        message: `Your waste report has been scheduled for pickup on ${new Date(scheduledDate).toLocaleDateString()}`,
+        data: { pickupTaskId: pickupTask._id, reportId },
+        priority: 'medium'
+      }
+    ];
+
+    await Notification.insertMany(notifications);
+
+    // Emit socket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('assign_task', {
+        collectorId,
+        pickupTask,
+        report,
+        collector
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Collector assigned successfully',
+      data: { 
+        pickupTask,
+        report: {
+          _id: report._id,
+          status: report.status,
+          assignedCollectorId: report.assignedCollectorId,
+          scheduledPickupDate: report.scheduledPickupDate
+        },
+        collector: {
+          _id: collector._id,
+          firstName: collector.firstName,
+          lastName: collector.lastName,
+          email: collector.email
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Assign collector error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/admin/collectors
+// @desc    Get all active collectors
+// @access  Private (admin only)
+router.get('/collectors', [
+  authorize('admin'),
+  validate
+], async (req, res) => {
+  try {
+    const collectors = await User.find({ 
+      role: 'collector', 
+      isActive: true 
+    })
+    .select('firstName lastName email phone')
+    .sort({ firstName: 1 });
+
+    res.json({
+      success: true,
+      data: collectors
+    });
+  } catch (error) {
+    console.error('Get collectors error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/admin/pending-reports
+// @desc    Get pending reports that need collector assignment
+// @access  Private (admin only)
+router.get('/pending-reports', [
+  authorize('admin'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+  validate
+], async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = {
+      status: { $in: ['pending', 'assigned'] }
+    };
+
+    const [reports, total] = await Promise.all([
+      WasteReport.find(filter)
+        .populate('userId', 'firstName lastName email phone')
+        .populate('assignedCollectorId', 'firstName lastName email')
+        .sort({ priority: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      WasteReport.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        reports,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get pending reports error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   GET /api/admin/pickup-tasks
+// @desc    Get all pickup tasks with filtering
+// @access  Private (admin only)
+router.get('/pickup-tasks', [
+  authorize('admin'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+  query('status').optional().isIn(['scheduled', 'in_progress', 'completed', 'cancelled', 'rescheduled']).withMessage('Invalid status'),
+  query('collectorId').optional().isMongoId().withMessage('Invalid collector ID'),
+  validate
+], async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.collectorId) filter.collectorId = req.query.collectorId;
+
+    const [pickupTasks, total] = await Promise.all([
+      PickupTask.find(filter)
+        .populate('reportId', 'type description location priority estimatedVolume status userId')
+        .populate('collectorId', 'firstName lastName email phone')
+        .sort({ scheduledDate: 1 })
+        .skip(skip)
+        .limit(limit),
+      PickupTask.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        pickupTasks,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get pickup tasks error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// @route   PATCH /api/admin/pickup-tasks/:id/reassign
+// @desc    Reassign a pickup task to another collector
+// @access  Private (admin only)
+router.patch('/pickup-tasks/:id/reassign', [
+  authorize('admin'),
+  body('collectorId')
+    .isMongoId()
+    .withMessage('Invalid collector ID'),
+  body('scheduledDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Invalid date format'),
+  body('reason')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Reason cannot exceed 200 characters'),
+  validate
+], async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { collectorId, scheduledDate, reason } = req.body;
+
+    const pickupTask = await PickupTask.findById(id);
+    if (!pickupTask) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pickup task not found'
+      });
+    }
+
+    if (pickupTask.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reassign completed task'
+      });
+    }
+
+    // Check if new collector exists and is active
+    const newCollector = await User.findOne({ _id: collectorId, role: 'collector', isActive: true });
+    if (!newCollector) {
+      return res.status(404).json({
+        success: false,
+        message: 'Collector not found or inactive'
+      });
+    }
+
+    const oldCollectorId = pickupTask.collectorId;
+    
+    // Update pickup task
+    pickupTask.collectorId = collectorId;
+    if (scheduledDate) {
+      pickupTask.scheduledDate = new Date(scheduledDate);
+    }
+    if (reason) {
+      pickupTask.notes = reason;
+    }
+    await pickupTask.save();
+
+    // Update report
+    const report = await WasteReport.findById(pickupTask.reportId);
+    if (report) {
+      report.assignedCollectorId = collectorId;
+      if (scheduledDate) {
+        report.scheduledPickupDate = new Date(scheduledDate);
+      }
+      await report.save();
+    }
+
+    // Create notifications
+    const notifications = [
+      {
+        userId: collectorId,
+        type: 'pickup_reassigned',
+        title: 'Task Reassigned to You',
+        message: `A pickup task has been reassigned to you${reason ? `: ${reason}` : ''}`,
+        data: { pickupTaskId: pickupTask._id, reportId: report._id },
+        priority: 'high'
+      },
+      {
+        userId: oldCollectorId,
+        type: 'pickup_reassigned',
+        title: 'Task Reassigned',
+        message: `A pickup task has been reassigned to another collector${reason ? `: ${reason}` : ''}`,
+        data: { pickupTaskId: pickupTask._id, reportId: report._id },
+        priority: 'medium'
+      }
+    ];
+
+    if (report) {
+      notifications.push({
+        userId: report.userId,
+        type: 'pickup_reassigned',
+        title: 'Pickup Reassigned',
+        message: `Your pickup has been reassigned to a new collector${reason ? `: ${reason}` : ''}`,
+        data: { pickupTaskId: pickupTask._id, reportId: report._id },
+        priority: 'medium'
+      });
+    }
+
+    await Notification.insertMany(notifications);
+
+    // Emit socket event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('task_reassigned', {
+        pickupTask,
+        oldCollectorId,
+        newCollectorId: collectorId,
+        report
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Task reassigned successfully',
+      data: { pickupTask }
+    });
+  } catch (error) {
+    console.error('Reassign task error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 module.exports = router;

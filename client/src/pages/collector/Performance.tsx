@@ -106,11 +106,11 @@ const Performance: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">📈 Performance Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📈 Performance Analytics</h1>
           <div className="flex space-x-2">
             {(['week', 'month', 'year'] as const).map((period) => (
               <button
@@ -119,7 +119,7 @@ const Performance: React.FC = () => {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedPeriod === period
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -130,40 +130,40 @@ const Performance: React.FC = () => {
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Tasks</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.totalTasks}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Tasks</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{metrics.totalTasks}</p>
               </div>
               <div className="text-3xl">📋</div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
                 <p className="text-2xl font-bold text-green-600">{metrics.completedTasks}</p>
               </div>
               <div className="text-3xl">✅</div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-                <p className="text-2xl font-bold text-blue-600">{metrics.completionRate.toFixed(1)}%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completion Rate</p>
+                <p className="text-2xl font-bold text-blue-600">{Number(metrics.completionRate ?? 0).toFixed(1)}%</p>
               </div>
               <div className="text-3xl">🎯</div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg. Time</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg. Time</p>
                 <p className="text-2xl font-bold text-purple-600">{metrics.averageCompletionTime}min</p>
               </div>
               <div className="text-3xl">⏱️</div>
@@ -174,96 +174,96 @@ const Performance: React.FC = () => {
         {/* Charts and Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Tasks by Priority */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tasks by Priority</h3>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-red-600">🔴 High Priority</span>
-                <span className="text-sm font-bold">{metrics.tasksByPriority.high}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByPriority.high}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-yellow-600">🟡 Medium Priority</span>
-                <span className="text-sm font-bold">{metrics.tasksByPriority.medium}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByPriority.medium}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-green-600">🟢 Low Priority</span>
-                <span className="text-sm font-bold">{metrics.tasksByPriority.low}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByPriority.low}</span>
               </div>
             </div>
           </div>
 
           {/* Tasks by Status */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tasks by Status</h3>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tasks by Status</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">⏳ Pending</span>
-                <span className="text-sm font-bold">{metrics.tasksByStatus.pending}</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">⏳ Pending</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByStatus.pending}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-blue-600">🔄 In Progress</span>
-                <span className="text-sm font-bold">{metrics.tasksByStatus.in_progress}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByStatus.in_progress}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-green-600">✅ Completed</span>
-                <span className="text-sm font-bold">{metrics.tasksByStatus.completed}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByStatus.completed}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-red-600">❌ Cancelled</span>
-                <span className="text-sm font-bold">{metrics.tasksByStatus.cancelled}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{metrics.tasksByStatus.cancelled}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Efficiency Metrics */}
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">⚡ Efficiency Metrics</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">⚡ Efficiency Metrics</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">{metrics.efficiency.onTimeCompletions}</p>
-              <p className="text-sm text-gray-600">On-Time Completions</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">On-Time Completions</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">{metrics.efficiency.totalCompletions}</p>
-              <p className="text-sm text-gray-600">Total Completions</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Completions</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{metrics.efficiency.onTimeRate.toFixed(1)}%</p>
-              <p className="text-sm text-gray-600">On-Time Rate</p>
+              <p className="text-2xl font-bold text-purple-600">{Number(metrics.efficiency?.onTimeRate ?? 0).toFixed(1)}%</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">On-Time Rate</p>
             </div>
           </div>
         </div>
 
         {/* Weekly Performance */}
         {metrics.weeklyData && metrics.weeklyData.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Weekly Performance Trend</h3>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-100 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">📊 Weekly Performance Trend</h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Week
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Tasks Completed
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Average Time (min)
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {metrics.weeklyData.map((week, index) => (
                     <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {week.week}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {week.tasksCompleted}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                         {week.averageTime}
                       </td>
                     </tr>

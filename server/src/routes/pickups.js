@@ -624,6 +624,12 @@ router.get('/my-tasks', [
   } catch (error) {
     console.error('❌ Error in /my-tasks endpoint:', error);
     console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      user: req.user ? { id: req.user._id, role: req.user.role } : 'No user'
+    });
     res.status(500).json({
       success: false,
       message: 'Server error',

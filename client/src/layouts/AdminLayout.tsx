@@ -14,6 +14,7 @@ const AdminLayout: React.FC = () => {
   const adminNavItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
     { name: 'Reports', href: '/admin/reports', icon: '📋' },
+    { name: 'Task Assignment', href: '/admin/assignments', icon: '👷' },
     { name: 'Users', href: '/admin/users', icon: '👥' },
     { name: 'Analytics', href: '/admin/analytics', icon: '📈' },
   ]

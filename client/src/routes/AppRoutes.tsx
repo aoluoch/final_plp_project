@@ -19,6 +19,7 @@ import AdminDashboard from '../pages/admin/Dashboard'
 import AdminReports from '../pages/admin/Reports'
 import AdminUsers from '../pages/admin/Users'
 import AdminAnalytics from '../pages/admin/Analytics'
+import TaskAssignment from '../pages/admin/TaskAssignment'
 
 // Collector Pages
 import CollectorDashboard from '../pages/collector/Dashboard'
@@ -76,6 +77,7 @@ const AppRoutes: React.FC = () => {
         <Route path="reports" element={<AdminReports />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="assignments" element={<TaskAssignment />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
