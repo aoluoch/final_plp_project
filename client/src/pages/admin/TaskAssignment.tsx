@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useToast } from '../../context/ToastContext'
 
 interface Report {
@@ -64,7 +64,7 @@ const TaskAssignment: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1)
 
   // Fetch pending reports
-  const fetchPendingReports = async () => {
+  const fetchPendingReports = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/admin/pending-reports?page=${currentPage}&limit=10`, {
@@ -89,10 +89,10 @@ const TaskAssignment: React.FC = () => {
         message: 'Failed to load pending reports'
       })
     }
-  }
+  }, [currentPage, showToast])
 
   // Fetch active collectors
-  const fetchCollectors = async () => {
+  const fetchCollectors = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch('/api/admin/collectors', {
@@ -116,7 +116,7 @@ const TaskAssignment: React.FC = () => {
         message: 'Failed to load collectors'
       })
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     const loadData = async () => {
@@ -125,7 +125,7 @@ const TaskAssignment: React.FC = () => {
       setLoading(false)
     }
     loadData()
-  }, [currentPage])
+  }, [fetchPendingReports, fetchCollectors])
 
   const handleAssignCollector = (report: Report) => {
     setSelectedReport(report)
